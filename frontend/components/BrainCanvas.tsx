@@ -12,6 +12,7 @@ interface Props {
 }
 
 export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
+  // isMobile starts false — this component must be loaded with ssr: false to avoid hydration mismatch
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
