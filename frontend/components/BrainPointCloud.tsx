@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -33,6 +33,9 @@ interface RegionBucket {
   positions: Float32Array
 }
 
+const _targetColor = new THREE.Color()
+const _idleColor = new THREE.Color('#c8dcff')
+
 function extractRegionBuckets(scene: THREE.Object3D): RegionBucket[] {
   const allVerts: THREE.Vector3[] = []
 
@@ -61,8 +64,8 @@ function extractRegionBuckets(scene: THREE.Object3D): RegionBucket[] {
   box.getSize(size)
   const range = Math.max(size.x, size.y, size.z) / 2 || 1
 
-  const rawBuckets: Record<SectionId, number[]> = Object.fromEntries(
-    SECTIONS.map((s) => [s, []])
+  const rawBuckets = Object.fromEntries(
+    SECTIONS.map((s) => [s, [] as number[]])
   ) as Record<SectionId, number[]>
 
   sampled.forEach((v) => {
@@ -94,18 +97,28 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
   // Ghost mesh — clone with near-transparent material
   const ghostScene = useMemo(() => {
     const clone = scene.clone(true)
+    // scene.clone(true) shares geometry buffers — materials are replaced, geometry is read-only so sharing is safe
+    const ghostMaterials: THREE.MeshBasicMaterial[] = []
     clone.traverse((obj) => {
       if ((obj as THREE.Mesh).isMesh) {
-        ;(obj as THREE.Mesh).material = new THREE.MeshBasicMaterial({
+        const mat = new THREE.MeshBasicMaterial({
           color: 0xffffff,
           transparent: true,
           opacity: 0.04,
           depthWrite: false,
         })
+        ;(obj as THREE.Mesh).material = mat
+        ghostMaterials.push(mat)
       }
     })
-    return clone
+    return { clone, ghostMaterials }
   }, [scene])
+
+  useEffect(() => {
+    return () => {
+      ghostScene.ghostMaterials.forEach((m) => m.dispose())
+    }
+  }, [ghostScene])
 
   // Per-region geometries (stable references, not recreated on render)
   const geometries = useMemo(
@@ -141,17 +154,25 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
     [glowTexture]
   )
 
+  useEffect(() => {
+    return () => {
+      Object.values(geometries).forEach((g) => g.dispose())
+      Object.values(materials).forEach((m) => m.dispose())
+      glowTexture.dispose()
+    }
+  }, [geometries, materials, glowTexture])
+
   useFrame((_, delta) => {
     SECTIONS.forEach((sectionId) => {
       const mat = materials[sectionId]
       const isActive = sectionId === activeSection
-      const isChatbotActive = sectionId === 'chatbot' && activeSection === 'chatbot'
+      const isChatbotActive = isActive && sectionId === 'chatbot'
 
       const targetOpacity = isActive ? 1.0 : 0.45
       const targetSize = isActive ? 0.022 : 0.012
       const targetColor = isActive
-        ? new THREE.Color(REGION_CONFIGS[sectionId].color)
-        : new THREE.Color('#c8dcff')
+        ? _targetColor.set(REGION_CONFIGS[sectionId].color)
+        : _idleColor
 
       const speed = isChatbotActive ? 8 : 4 // faster pulse for chatbot
 
@@ -163,7 +184,7 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
 
   return (
     <group>
-      <primitive object={ghostScene} />
+      <primitive object={ghostScene.clone} />
       {SECTIONS.map((sectionId) => {
         const geo = geometries[sectionId]
         if (!geo || geo.attributes.position.count === 0) return null
