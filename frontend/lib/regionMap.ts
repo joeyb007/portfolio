@@ -49,6 +49,8 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
 export function getSectionForPoint(nx: number, ny: number, nz: number): SectionId {
   if (ny < -0.35) return 'contact'                            // brain stem — very bottom
   if (ny < -0.05 && nz < -0.05) return 'projects'            // cerebellum — back bottom
+  // chatbot (Broca's area) must be checked BEFORE skills (parietal crown)
+  // because the left-front-upper region satisfies both ny > 0.05 and ny > 0.35
   if (nx < -0.25 && ny > 0.05 && nz > 0.05) return 'chatbot' // Broca's area — left front
   if (ny > 0.35) return 'skills'                              // parietal — high crown
   if (nz < -0.1 && ny > 0.05) return 'blog'                  // occipital — back mid

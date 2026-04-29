@@ -30,6 +30,11 @@ describe('getSectionForPoint', () => {
     expect(getSectionForPoint(0, 0.05, 0)).toBe('personal')
   })
 
+  it('returns experience for temporal/side points', () => {
+    // midlevel point with no strong z bias — falls through to experience default
+    expect(getSectionForPoint(0.5, 0.15, 0)).toBe('experience')
+  })
+
   it('REGION_CONFIGS covers every section in SECTIONS', () => {
     SECTIONS.forEach((s) => {
       expect(REGION_CONFIGS[s]).toBeDefined()
