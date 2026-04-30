@@ -166,10 +166,11 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
     [regionBuckets]
   )
 
-  // size is in local space — divide by groupScale so dots stay the same apparent size
-  // regardless of the model's original world-unit scale
-  const baseSize   = 2.5 / groupScale   // ~2.5 scene-unit dots
-  const activeSize = 4.0 / groupScale
+  // PointsMaterial.size is projection-space, not model-space — groupScale does not affect it.
+  // At camera z≈4.2: gl_PointSize = size * (0.5 * canvasHeight / 4.2)
+  // size=0.05 → ~10px per dot on a 900px canvas; tune up/down to taste.
+  const baseSize   = 0.05
+  const activeSize = 0.08
 
   // Per-region materials (mutated in useFrame)
   const materials = useMemo(
@@ -190,7 +191,7 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
           }),
         ])
       ) as Record<SectionId, THREE.PointsMaterial>,
-    [glowTexture, baseSize]
+    [glowTexture]
   )
 
   useEffect(() => {
