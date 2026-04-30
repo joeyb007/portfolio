@@ -12,6 +12,7 @@ import {
 } from '@/lib/regionMap'
 
 const MAX_POINTS = 15_000
+const TARGET_RADIUS = 1.3  // world-unit radius brain fills at camera z=4.2, fov=35
 
 function createGlowTexture(): THREE.Texture {
   const size = 64
@@ -33,10 +34,16 @@ interface RegionBucket {
   positions: Float32Array
 }
 
+interface ExtractionResult {
+  buckets: RegionBucket[]
+  groupPosition: [number, number, number]  // -scale*center, centers rotation pivot
+  groupScale: number                        // TARGET_RADIUS / range
+}
+
 const _targetColor = new THREE.Color()
 const _idleColor = new THREE.Color('#c8dcff')
 
-function extractRegionBuckets(scene: THREE.Object3D): RegionBucket[] {
+function extractRegionBuckets(scene: THREE.Object3D): ExtractionResult {
   // Count total vertices first (cheap — no allocation) so we can stride during collection
   let totalVerts = 0
   scene.traverse((obj) => {
@@ -81,10 +88,17 @@ function extractRegionBuckets(scene: THREE.Object3D): RegionBucket[] {
     rawBuckets[section].push(v.x, v.y, v.z)
   })
 
-  return SECTIONS.map((sectionId) => ({
-    sectionId,
-    positions: new Float32Array(rawBuckets[sectionId]),
-  }))
+  const s = TARGET_RADIUS / range
+
+  return {
+    buckets: SECTIONS.map((sectionId) => ({
+      sectionId,
+      positions: new Float32Array(rawBuckets[sectionId]),
+    })),
+    // T(P)*S*v = P + s*v = s*v - s*center = s*(v-center) ✓
+    groupPosition: [-s * center.x, -s * center.y, -s * center.z],
+    groupScale: s,
+  }
 }
 
 interface Props {
@@ -97,7 +111,10 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
   const { scene } = useGLTF('/brain.glb')
   const glowTexture = useMemo(() => createGlowTexture(), [])
 
-  const regionBuckets = useMemo(() => extractRegionBuckets(scene), [scene])
+  const { buckets: regionBuckets, groupPosition, groupScale } = useMemo(
+    () => extractRegionBuckets(scene),
+    [scene]
+  )
 
   // Ghost mesh — clone with near-transparent material
   const ghostScene = useMemo(() => {
@@ -188,7 +205,7 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
   })
 
   return (
-    <group>
+    <group position={groupPosition} scale={groupScale}>
       <primitive object={ghostScene.clone} />
       {SECTIONS.map((sectionId) => {
         const geo = geometries[sectionId]

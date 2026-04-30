@@ -49,8 +49,8 @@ export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
           enableZoom={!isMobile}
           autoRotate
           autoRotateSpeed={0.3}
-          minDistance={2.5}
-          maxDistance={7}
+          minDistance={1.5}
+          maxDistance={6}
         />
       </Canvas>
     </div>
