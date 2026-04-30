@@ -15,6 +15,8 @@ import BrainLabels from './BrainLabels'
 
 const MAX_POINTS    = 15_000
 const TARGET_RADIUS = 1.3
+const BASE_SIZE     = 0.03
+const ACTIVE_SIZE   = 0.05
 
 const _targetColor = new THREE.Color()
 const _idleColor   = new THREE.Color('#dff0ff')
@@ -144,12 +146,6 @@ export default function BrainPointCloud({
     [scene]
   )
 
-  useEffect(() => {
-    if (!groupRef.current) return
-    groupRef.current.position.set(groupPosition[0], groupPosition[1] - 2.5, groupPosition[2])
-    groupRef.current.scale.setScalar(groupScale * 0.01)
-  }, [groupPosition, groupScale])
-
   const ghostScene = useMemo(() => {
     const clone = scene.clone(true)
     const holoMaterials: THREE.ShaderMaterial[] = []
@@ -190,16 +186,13 @@ export default function BrainPointCloud({
     [regionBuckets]
   )
 
-  const baseSize   = 0.03
-  const activeSize = 0.05
-
   const materials = useMemo(
     () =>
       Object.fromEntries(
         SECTIONS.map((sectionId) => [
           sectionId,
           new THREE.PointsMaterial({
-            size:            baseSize,
+            size:            BASE_SIZE,
             map:             glowTexture,
             transparent:     true,
             blending:        THREE.AdditiveBlending,
@@ -259,7 +252,7 @@ export default function BrainPointCloud({
       const speed     = isChatbot ? 8 : 4
 
       mat.opacity += ((isActive ? 0.9 : 0.5) - mat.opacity) * Math.min(1, delta * speed)
-      mat.size    += ((isActive ? activeSize : baseSize) - mat.size) * Math.min(1, delta * speed)
+      mat.size    += ((isActive ? ACTIVE_SIZE : BASE_SIZE) - mat.size) * Math.min(1, delta * speed)
       mat.color.lerp(
         isActive ? _targetColor.set(REGION_CONFIGS[sectionId].color) : _idleColor,
         Math.min(1, delta * speed)
@@ -268,7 +261,11 @@ export default function BrainPointCloud({
   })
 
   return (
-    <group ref={groupRef}>
+    <group
+      ref={groupRef}
+      position={[groupPosition[0], groupPosition[1] - 2.5, groupPosition[2]] as [number, number, number]}
+      scale={groupScale * 0.01}
+    >
       <primitive object={ghostScene.clone} />
       {SECTIONS.map((sectionId) => {
         const geo = geometries[sectionId]
