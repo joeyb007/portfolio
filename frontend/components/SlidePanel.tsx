@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 interface Props {
   open: boolean
@@ -10,8 +10,6 @@ interface Props {
 }
 
 export default function SlidePanel({ open, onClose, title, children }: Props) {
-  const panelRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) onClose()
@@ -20,20 +18,11 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
     return () => window.removeEventListener('keydown', handler)
   }, [open, onClose])
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (open && panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose()
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [open, onClose])
-
   return (
     <>
-      {/* Invisible backdrop that captures outside clicks */}
+      {/* Backdrop — clicking outside closes the panel */}
       <div
+        onClick={onClose}
         style={{
           position: 'fixed',
           inset: 0,
@@ -44,7 +33,7 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
 
       {/* Panel */}
       <div
-        ref={panelRef}
+        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -88,6 +77,7 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
             {title}
           </span>
           <button
+            autoFocus
             onClick={onClose}
             aria-label="Close panel"
             style={{
