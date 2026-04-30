@@ -28,14 +28,14 @@ export const CONTENT_SECTIONS: SectionId[] = [
 ]
 
 export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
-  about:      { sectionId: 'about',      label: 'About',      color: '#60a5fa' },
-  experience: { sectionId: 'experience', label: 'Experience', color: '#818cf8' },
-  skills:     { sectionId: 'skills',     label: 'Skills',     color: '#34d399' },
-  projects:   { sectionId: 'projects',   label: 'Projects',   color: '#f472b6' },
-  blog:       { sectionId: 'blog',       label: 'Blog',       color: '#fb923c' },
-  personal:   { sectionId: 'personal',   label: 'Personal',   color: '#e879f9' },
-  chatbot:    { sectionId: 'chatbot',    label: 'Chat',       color: '#facc15', isChatbot: true },
-  contact:    { sectionId: 'contact',    label: 'Contact',    color: '#94a3b8' },
+  about:      { sectionId: 'about',      label: 'About',      color: '#f97316' },
+  experience: { sectionId: 'experience', label: 'Experience', color: '#ef4444' },
+  skills:     { sectionId: 'skills',     label: 'Skills',     color: '#f97316' },
+  projects:   { sectionId: 'projects',   label: 'Projects',   color: '#ef4444' },
+  blog:       { sectionId: 'blog',       label: 'Blog',       color: '#f97316' },
+  personal:   { sectionId: 'personal',   label: 'Personal',   color: '#ef4444' },
+  chatbot:    { sectionId: 'chatbot',    label: 'Chat',       color: '#fbbf24', isChatbot: true },
+  contact:    { sectionId: 'contact',    label: 'Contact',    color: '#f97316' },
 }
 
 /**

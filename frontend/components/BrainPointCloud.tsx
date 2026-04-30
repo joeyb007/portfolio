@@ -13,13 +13,13 @@ import {
 import { holoVertex, holoFragment } from '@/lib/holoShader'
 import BrainLabels from './BrainLabels'
 
-const MAX_POINTS    = 15_000
+const MAX_POINTS    = 60_000
 const TARGET_RADIUS = 1.3
-const BASE_SIZE     = 0.03
-const ACTIVE_SIZE   = 0.05
+const BASE_SIZE     = 0.012
+const ACTIVE_SIZE   = 0.018
 
 const _targetColor = new THREE.Color()
-const _idleColor   = new THREE.Color('#dff0ff')
+const _idleColor   = new THREE.Color('#2563eb')
 
 function createGlowTexture(): THREE.Texture {
   const size = 64
@@ -199,8 +199,8 @@ export default function BrainPointCloud({
             depthWrite:      false,
             sizeAttenuation: true,
             alphaTest:       0.01,
-            color:           new THREE.Color('#dff0ff'),
-            opacity:         0.5,
+            color:           new THREE.Color('#2563eb'),
+            opacity:         0.75,
           }),
         ])
       ) as Record<SectionId, THREE.PointsMaterial>,
@@ -251,7 +251,7 @@ export default function BrainPointCloud({
       const isChatbot = isActive && sectionId === 'chatbot'
       const speed     = isChatbot ? 8 : 4
 
-      mat.opacity += ((isActive ? 0.9 : 0.5) - mat.opacity) * Math.min(1, delta * speed)
+      mat.opacity += ((isActive ? 1.0 : 0.75) - mat.opacity) * Math.min(1, delta * speed)
       mat.size    += ((isActive ? ACTIVE_SIZE : BASE_SIZE) - mat.size) * Math.min(1, delta * speed)
       mat.color.lerp(
         isActive ? _targetColor.set(REGION_CONFIGS[sectionId].color) : _idleColor,
