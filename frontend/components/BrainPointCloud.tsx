@@ -111,11 +111,15 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
   const { scene } = useGLTF('/brain.glb')
   const glowTexture = useMemo(() => createGlowTexture(), [])
 
-  // Log mesh names once so we can wire segments to regions
+  // Debug: log bounding box so we can tune camera/scale
   useMemo(() => {
-    const names: string[] = []
-    scene.traverse((obj) => { if ((obj as THREE.Mesh).isMesh) names.push(obj.name) })
-    console.log('[BrainPointCloud] mesh names:', names)
+    scene.updateMatrixWorld(true)
+    const box = new THREE.Box3().setFromObject(scene)
+    const size = new THREE.Vector3()
+    const center = new THREE.Vector3()
+    box.getSize(size)
+    box.getCenter(center)
+    console.log('[Brain] center:', center, 'size:', size, 'groupScale will be:', (1.3 / (Math.max(size.x, size.y, size.z) / 2)).toFixed(3))
   }, [scene])
 
   const { buckets: regionBuckets, groupPosition, groupScale } = useMemo(
@@ -162,6 +166,11 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
     [regionBuckets]
   )
 
+  // size is in local space — divide by groupScale so dots stay the same apparent size
+  // regardless of the model's original world-unit scale
+  const baseSize   = 2.5 / groupScale   // ~2.5 scene-unit dots
+  const activeSize = 4.0 / groupScale
+
   // Per-region materials (mutated in useFrame)
   const materials = useMemo(
     () =>
@@ -169,10 +178,10 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
         SECTIONS.map((sectionId) => [
           sectionId,
           new THREE.PointsMaterial({
-            size: 0.025,
+            size: baseSize,
             map: glowTexture,
             transparent: true,
-            blending: THREE.NormalBlending,   // additive is invisible on light backgrounds
+            blending: THREE.NormalBlending,
             depthWrite: false,
             sizeAttenuation: true,
             alphaTest: 0.01,
@@ -181,7 +190,7 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
           }),
         ])
       ) as Record<SectionId, THREE.PointsMaterial>,
-    [glowTexture]
+    [glowTexture, baseSize]
   )
 
   useEffect(() => {
@@ -199,7 +208,7 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
       const isChatbotActive = isActive && sectionId === 'chatbot'
 
       const targetOpacity = isActive ? 1.0 : 0.75
-      const targetSize = isActive ? 0.038 : 0.022
+      const targetSize = isActive ? activeSize : baseSize
       const targetColor = isActive
         ? _targetColor.set(REGION_CONFIGS[sectionId].color)
         : _idleColor
