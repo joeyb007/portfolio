@@ -266,7 +266,6 @@ export default function BrainPointCloud({
       position={[groupPosition[0], groupPosition[1] - 2.5, groupPosition[2]] as [number, number, number]}
       scale={groupScale * 0.01}
     >
-      <primitive object={ghostScene.clone} />
       {SECTIONS.map((sectionId) => {
         const geo = geometries[sectionId]
         if (!geo || geo.attributes.position.count === 0) return null
