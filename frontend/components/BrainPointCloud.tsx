@@ -141,6 +141,16 @@ export default function BrainPointCloud({
   const onRevealDoneRef = useRef(onRevealDone)
   useEffect(() => { onRevealDoneRef.current = onRevealDone })
 
+  // Set initial transform once — do NOT use JSX position/scale props on the group.
+  // If JSX props are used, R3F reapplies them on every React reconcile (e.g. when
+  // setRevealDone fires), snapping the group back to the start position mid-animation.
+  useEffect(() => {
+    if (!groupRef.current) return
+    groupRef.current.position.set(groupPosition[0], groupPosition[1] - 2.5, groupPosition[2])
+    groupRef.current.scale.setScalar(groupScale * 0.01)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // intentionally empty — runs once after mount
+
   const { buckets: regionBuckets, centroids, groupPosition, groupScale } = useMemo(
     () => extractRegionBuckets(scene),
     [scene]
@@ -261,11 +271,7 @@ export default function BrainPointCloud({
   })
 
   return (
-    <group
-      ref={groupRef}
-      position={[groupPosition[0], groupPosition[1] - 2.5, groupPosition[2]] as [number, number, number]}
-      scale={groupScale * 0.01}
-    >
+    <group ref={groupRef}>
       {SECTIONS.map((sectionId) => {
         const geo = geometries[sectionId]
         if (!geo || geo.attributes.position.count === 0) return null
