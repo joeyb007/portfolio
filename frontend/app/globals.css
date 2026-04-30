@@ -1,15 +1,12 @@
-@import "tailwindcss";
-
 :root {
   --background: #e8edf5;
   --foreground: #1e293b;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 html, body {
@@ -20,4 +17,11 @@ html, body {
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
 }

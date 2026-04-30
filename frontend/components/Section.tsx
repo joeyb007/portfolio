@@ -4,11 +4,11 @@ import type { SectionId } from '@/lib/regionMap'
 interface Props {
   sectionId: SectionId
   children: React.ReactNode
-  className?: string
+  style?: React.CSSProperties
 }
 
 const Section = forwardRef<HTMLElement, Props>(function Section(
-  { sectionId, children, className = '' },
+  { sectionId, children, style },
   ref
 ) {
   return (
@@ -16,7 +16,8 @@ const Section = forwardRef<HTMLElement, Props>(function Section(
       ref={ref}
       id={sectionId}
       data-section={sectionId}
-      className={`min-h-screen flex items-center ${className}`}
+      className="section"
+      style={style}
     >
       {children}
     </section>
