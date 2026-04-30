@@ -15,8 +15,8 @@ import BrainLabels from './BrainLabels'
 
 const MAX_POINTS    = 60_000
 const TARGET_RADIUS = 1.3
-const BASE_SIZE     = 0.012
-const ACTIVE_SIZE   = 0.018
+const BASE_SIZE     = 0.04
+const ACTIVE_SIZE   = 0.06
 
 const _targetColor = new THREE.Color()
 const _idleColor   = new THREE.Color('#2563eb')
