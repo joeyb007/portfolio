@@ -3,9 +3,10 @@
 import dynamic from 'next/dynamic'
 import { useState, useCallback, useRef, useLayoutEffect, Suspense } from 'react'
 import ScrollContent from '@/components/ScrollContent'
-import Section from '@/components/Section'
 import SlidePanel from '@/components/SlidePanel'
 import ChatPanel from '@/components/ChatPanel'
+import SectionCard from '@/components/SectionCard'
+import SectionIndicator from '@/components/SectionIndicator'
 import { REGION_CONFIGS, CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
 
 // ssr: false required — Three.js uses browser APIs unavailable in Node
@@ -22,133 +23,99 @@ const PANEL_TITLES: Record<SectionId, string> = {
   contact:    'Contact',
 }
 
-const card: React.CSSProperties = {
-  pointerEvents: 'auto',
-  background: 'rgba(255,255,255,0.65)',
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
-  borderRadius: 12,
-  padding: '28px 36px',
-  maxWidth: 460,
-}
-
-const mono: React.CSSProperties = {
-  fontFamily: 'var(--font-geist-mono)',
-  fontSize: 11,
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase' as const,
-  color: '#64748b',
-  marginBottom: 8,
-}
-
 export default function Home() {
-  const [activeSection, setActiveSection] = useState<SectionId | null>(null)
-  const [panelOpen, setPanelOpen] = useState<SectionId | null>(null)
+  const [activeSectionIdx, setActiveSectionIdx] = useState(0)
+  const [panelOpen,        setPanelOpen]        = useState<SectionId | null>(null)
+
+  const activeSectionId = CONTENT_SECTIONS[activeSectionIdx]
 
   const panelOpenRef = useRef<SectionId | null>(null)
+  useLayoutEffect(() => { panelOpenRef.current = panelOpen }, [panelOpen])
 
-  const handleSectionChange = useCallback((sectionId: SectionId) => {
-    // Don't shift brain highlight while a panel is open
-    if (panelOpenRef.current === null) setActiveSection(sectionId)
+  const goNext = useCallback(() => {
+    setActiveSectionIdx((i) => Math.min(i + 1, CONTENT_SECTIONS.length - 1))
+  }, [])
+
+  const goPrev = useCallback(() => {
+    setActiveSectionIdx((i) => Math.max(i - 1, 0))
+  }, [])
+
+  const goTo = useCallback((sectionId: SectionId) => {
+    const idx = CONTENT_SECTIONS.indexOf(sectionId)
+    if (idx >= 0) setActiveSectionIdx(idx)
   }, [])
 
   const handleRegionClick = useCallback((sectionId: SectionId) => {
-    setActiveSection(sectionId)
     const cfg = REGION_CONFIGS[sectionId]
     if (cfg.isChatbot) {
       setPanelOpen('chatbot')
       return
     }
-    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
-    // Defer panel open until after SlidePanel's 350ms transition settles
+    goTo(sectionId)
     setTimeout(() => setPanelOpen(sectionId), 400)
+  }, [goTo])
+
+  const handleCardOpen = useCallback((sectionId: SectionId) => {
+    setPanelOpen(sectionId)
   }, [])
 
   const closePanel = useCallback(() => setPanelOpen(null), [])
 
-  useLayoutEffect(() => {
-    panelOpenRef.current = panelOpen
-  }, [panelOpen])
-
   return (
     <>
       <Suspense fallback={null}>
-        <BrainCanvas activeSection={activeSection} onRegionClick={handleRegionClick} />
+        <BrainCanvas
+          activeSection={activeSectionId}
+          onRegionClick={handleRegionClick}
+        />
       </Suspense>
 
-      <ScrollContent onSectionChange={handleSectionChange}>
-        {(registerRef) => (
-          <>
-            {/* Hero */}
-            <div
-              style={{
-                minHeight: '100vh',
-                display: 'flex',
-                alignItems: 'flex-end',
-                padding: '0 5vw 10vh',
-                pointerEvents: 'none',
-              }}
-            >
-              <div style={card}>
-                <p style={mono}>AI Engineer · MLE</p>
-                <h1
-                  style={{
-                    fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-                    fontWeight: 700,
-                    margin: '0 0 12px',
-                    lineHeight: 1.1,
-                    color: '#1e293b',
-                  }}
-                >
-                  Joseph Barbosa
-                </h1>
-                <p style={{ color: '#475569', fontSize: 16, lineHeight: 1.6, margin: 0 }}>
-                  Building intelligent systems. Explore my brain to navigate.
-                </p>
-              </div>
-            </div>
+      <ScrollContent onNext={goNext} onPrev={goPrev} />
 
-            {/* Content sections */}
-            {CONTENT_SECTIONS.map((id) => (
-              <Section
-                key={id}
-                sectionId={id}
-                ref={registerRef(id)}
-              >
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    padding: '0 5vw',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  <div
-                    style={{ ...card, cursor: 'pointer' }}
-                    onClick={() => handleRegionClick(id)}
-                  >
-                    <p style={mono}>{REGION_CONFIGS[id].label}</p>
-                    <h2
-                      style={{
-                        fontSize: 22,
-                        fontWeight: 600,
-                        margin: '0 0 8px',
-                        color: '#1e293b',
-                      }}
-                    >
-                      {PANEL_TITLES[id]}
-                    </h2>
-                    <p style={{ color: '#64748b', fontSize: 13, margin: 0 }}>
-                      Click to open →
-                    </p>
-                  </div>
-                </div>
-              </Section>
-            ))}
-          </>
-        )}
-      </ScrollContent>
+      {/* Hero — always visible bottom-left */}
+      <div
+        style={{
+          position:      'fixed',
+          left:          '5vw',
+          bottom:        '10vh',
+          zIndex:        10,
+          pointerEvents: 'none',
+          maxWidth:      360,
+        }}
+      >
+        <p style={{
+          fontFamily:    'var(--font-geist-mono), monospace',
+          fontSize:      10,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          color:         'rgba(78,207,255,0.7)',
+          margin:        '0 0 8px',
+        }}>
+          AI Engineer · MLE
+        </p>
+        <h1 style={{
+          fontSize:   'clamp(1.8rem, 4vw, 3rem)',
+          fontWeight: 700,
+          color:      '#f0f4ff',
+          margin:     '0 0 8px',
+          lineHeight: 1.1,
+        }}>
+          Joseph Barbosa
+        </h1>
+        <p style={{ color: 'rgba(240,244,255,0.45)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+          Scroll or click a region to explore.
+        </p>
+      </div>
+
+      <SectionCard
+        activeSectionId={activeSectionId}
+        onOpen={handleCardOpen}
+      />
+
+      <SectionIndicator
+        activeSectionId={activeSectionId}
+        onDotClick={goTo}
+      />
 
       <SlidePanel
         open={panelOpen !== null}
@@ -158,8 +125,8 @@ export default function Home() {
         {panelOpen === 'chatbot' ? (
           <ChatPanel />
         ) : panelOpen ? (
-          <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.7 }}>
-            Content for <strong>{panelOpen}</strong> coming in Phase 2.
+          <p style={{ color: 'rgba(240,244,255,0.6)', fontSize: 14, lineHeight: 1.7 }}>
+            Content for <strong style={{ color: '#f0f4ff' }}>{panelOpen}</strong> coming in Phase 2.
           </p>
         ) : null}
       </SlidePanel>
