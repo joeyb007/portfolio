@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import ScrollContent from '@/components/ScrollContent'
 import Section from '@/components/Section'
 import SlidePanel from '@/components/SlidePanel'
@@ -45,8 +45,11 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState<SectionId | null>(null)
   const [panelOpen, setPanelOpen] = useState<SectionId | null>(null)
 
+  const panelOpenRef = useRef<SectionId | null>(null)
+
   const handleSectionChange = useCallback((sectionId: SectionId) => {
-    setActiveSection(sectionId)
+    // Don't shift brain highlight while a panel is open
+    if (panelOpenRef.current === null) setActiveSection(sectionId)
   }, [])
 
   const handleRegionClick = useCallback((sectionId: SectionId) => {
@@ -57,10 +60,15 @@ export default function Home() {
       return
     }
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' })
-    setPanelOpen(sectionId)
+    // Defer panel open until after SlidePanel's 350ms transition settles
+    setTimeout(() => setPanelOpen(sectionId), 400)
   }, [])
 
   const closePanel = useCallback(() => setPanelOpen(null), [])
+
+  useEffect(() => {
+    panelOpenRef.current = panelOpen
+  }, [panelOpen])
 
   return (
     <>
@@ -103,7 +111,7 @@ export default function Home() {
               <Section
                 key={id}
                 sectionId={id}
-                ref={registerRef(id) as React.Ref<HTMLElement>}
+                ref={registerRef(id)}
               >
                 <div
                   style={{
@@ -147,11 +155,11 @@ export default function Home() {
       >
         {panelOpen === 'chatbot' ? (
           <ChatPanel />
-        ) : (
+        ) : panelOpen ? (
           <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.7 }}>
             Content for <strong>{panelOpen}</strong> coming in Phase 2.
           </p>
-        )}
+        ) : null}
       </SlidePanel>
     </>
   )
