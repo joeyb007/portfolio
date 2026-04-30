@@ -1,58 +1,66 @@
 'use client'
 
-import { useRef, useEffect, useCallback } from 'react'
-import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
+import { useEffect, useRef, useCallback } from 'react'
 
 interface Props {
-  onSectionChange: (sectionId: SectionId) => void
-  children: (
-    registerRef: (id: SectionId) => (el: HTMLElement | null) => void
-  ) => React.ReactNode
+  onNext: () => void
+  onPrev: () => void
+  children?: React.ReactNode
 }
 
-export default function ScrollContent({ onSectionChange, children }: Props) {
-  const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement>>>({})
-  // Ref keeps the callback stable — observers don't need to be recreated when it changes
-  const onSectionChangeRef = useRef(onSectionChange)
-  useEffect(() => { onSectionChangeRef.current = onSectionChange })
+// Replaces the IntersectionObserver model with a wheel/keyboard/swipe
+// event handler that fires onNext / onPrev, debounced at 600ms.
+export default function ScrollContent({ onNext, onPrev, children }: Props) {
+  const cooldownRef = useRef(false)
+  const touchStartY = useRef(0)
+  const onNextRef   = useRef(onNext)
+  const onPrevRef   = useRef(onPrev)
 
-  const registerRef = useCallback(
-    (id: SectionId) => (el: HTMLElement | null) => {
-      if (el) sectionRefs.current[id] = el
-      else if (process.env.NODE_ENV === 'development' && !el) {
-        // Section ref was not registered — element may have mounted after observers were created
-        console.warn(`[ScrollContent] ref for section "${id}" was null at registration time`)
-      }
-    },
-    []
-  )
+  useEffect(() => { onNextRef.current = onNext })
+  useEffect(() => { onPrevRef.current = onPrev })
+
+  const trigger = useCallback((direction: 'next' | 'prev') => {
+    if (cooldownRef.current) return
+    cooldownRef.current = true
+    setTimeout(() => { cooldownRef.current = false }, 600)
+    if (direction === 'next') onNextRef.current()
+    else onPrevRef.current()
+  }, [])
 
   useEffect(() => {
-    const observers: IntersectionObserver[] = []
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      if (Math.abs(e.deltaY) < 10) return
+      trigger(e.deltaY > 0 ? 'next' : 'prev')
+    }
 
-    CONTENT_SECTIONS.forEach((sectionId) => {
-      const el = sectionRefs.current[sectionId]
-      if (!el) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(`[ScrollContent] no element found for section "${sectionId}" — observer skipped`)
-        }
-        return
-      }
-      const observer = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) onSectionChangeRef.current(sectionId) },
-        { threshold: 0.4 }
-      )
-      observer.observe(el)
-      observers.push(observer)
-    })
+    const onKey = (e: KeyboardEvent) => {
+      if (['ArrowDown', 'PageDown'].includes(e.key)) { e.preventDefault(); trigger('next') }
+      if (['ArrowUp',   'PageUp'  ].includes(e.key)) { e.preventDefault(); trigger('prev') }
+    }
 
-    return () => observers.forEach((o) => o.disconnect())
-  }, []) // empty deps — stable via ref
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY
+    }
 
-  return (
-    <div style={{ position: 'relative', zIndex: 10, pointerEvents: 'none' }}>
-      {/* Children must set pointer-events: auto on interactive elements */}
-      {children(registerRef)}
-    </div>
-  )
+    const onTouchEnd = (e: TouchEvent) => {
+      const delta = touchStartY.current - e.changedTouches[0].clientY
+      if (Math.abs(delta) < 40) return
+      trigger(delta > 0 ? 'next' : 'prev')
+    }
+
+    window.addEventListener('wheel',      onWheel,      { passive: false })
+    window.addEventListener('keydown',    onKey)
+    window.addEventListener('touchstart', onTouchStart, { passive: true })
+    window.addEventListener('touchend',   onTouchEnd,   { passive: true })
+
+    return () => {
+      window.removeEventListener('wheel',      onWheel)
+      window.removeEventListener('keydown',    onKey)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchend',   onTouchEnd)
+    }
+  }, [trigger])
+
+  return <>{children}</>
 }
