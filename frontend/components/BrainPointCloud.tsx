@@ -111,16 +111,6 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
   const { scene } = useGLTF('/brain.glb')
   const glowTexture = useMemo(() => createGlowTexture(), [])
 
-  // Debug: log bounding box so we can tune camera/scale
-  useMemo(() => {
-    scene.updateMatrixWorld(true)
-    const box = new THREE.Box3().setFromObject(scene)
-    const size = new THREE.Vector3()
-    const center = new THREE.Vector3()
-    box.getSize(size)
-    box.getCenter(center)
-    console.log('[Brain] center:', center, 'size:', size, 'groupScale will be:', (1.3 / (Math.max(size.x, size.y, size.z) / 2)).toFixed(3))
-  }, [scene])
 
   const { buckets: regionBuckets, groupPosition, groupScale } = useMemo(
     () => extractRegionBuckets(scene),
