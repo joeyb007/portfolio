@@ -46,10 +46,10 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
           width: 'min(520px, 92vw)',
           transform: open ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
-          background: 'rgba(255,255,255,0.78)',
+          background: 'rgba(5, 10, 20, 0.88)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderLeft: '1px solid rgba(255,255,255,0.4)',
+          borderLeft: '1px solid rgba(78,207,255,0.3)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -62,7 +62,7 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '20px 24px',
-            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
           }}
         >
           <span
@@ -71,7 +71,7 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
               fontSize: 11,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: '#64748b',
+              color: 'rgba(240,244,255,0.5)',
             }}
           >
             {title}
@@ -85,7 +85,7 @@ export default function SlidePanel({ open, onClose, title, children }: Props) {
               border: 'none',
               cursor: 'pointer',
               padding: 4,
-              color: '#64748b',
+              color: 'rgba(240,244,255,0.5)',
               fontSize: 22,
               lineHeight: 1,
             }}
