@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useLayoutEffect } from 'react'
 import ScrollContent from '@/components/ScrollContent'
 import Section from '@/components/Section'
 import SlidePanel from '@/components/SlidePanel'
@@ -66,7 +66,7 @@ export default function Home() {
 
   const closePanel = useCallback(() => setPanelOpen(null), [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     panelOpenRef.current = panelOpen
   }, [panelOpen])
 
