@@ -4,17 +4,18 @@ import { useEffect, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import BrainPointCloud from './BrainPointCloud'
+import ProjectorBeam from './ProjectorBeam'
 import type { SectionId } from '@/lib/regionMap'
 
 interface Props {
   activeSection: SectionId | null
   onRegionClick: (sectionId: SectionId) => void
-  onRevealDone?: () => void
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone }: Props) {
-  // isMobile starts false — this component must be loaded with ssr: false to avoid hydration mismatch
-  const [isMobile, setIsMobile] = useState(false)
+export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
+  // isMobile starts false — must be loaded with ssr: false to avoid hydration mismatch
+  const [isMobile,   setIsMobile]   = useState(false)
+  const [revealDone, setRevealDone] = useState(false)
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -23,6 +24,8 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
+
+  const handleRevealDone = () => setRevealDone(true)
 
   return (
     <div
@@ -39,17 +42,22 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
         gl={{ antialias: true, alpha: true }}
         dpr={isMobile ? [1, 1.5] : [1, 2]}
       >
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={0.3} />
+
+        <ProjectorBeam />
+
         <BrainPointCloud
           activeSection={activeSection}
           onRegionClick={onRegionClick}
           isMobile={isMobile}
-          onRevealDone={onRevealDone ?? (() => {})}
+          onRevealDone={handleRevealDone}
         />
+
         <OrbitControls
+          enabled={revealDone}
           enablePan={false}
           enableZoom={!isMobile}
-          autoRotate
+          autoRotate={revealDone}
           autoRotateSpeed={0.3}
           minDistance={1.5}
           maxDistance={6}
