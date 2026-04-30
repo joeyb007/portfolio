@@ -41,7 +41,7 @@ interface ExtractionResult {
 }
 
 const _targetColor = new THREE.Color()
-const _idleColor = new THREE.Color('#c8dcff')
+const _idleColor = new THREE.Color('#4a7fbf')   // visible mid-blue on light bg
 
 function extractRegionBuckets(scene: THREE.Object3D): ExtractionResult {
   // Count total vertices first (cheap — no allocation) so we can stride during collection
@@ -111,6 +111,13 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
   const { scene } = useGLTF('/brain.glb')
   const glowTexture = useMemo(() => createGlowTexture(), [])
 
+  // Log mesh names once so we can wire segments to regions
+  useMemo(() => {
+    const names: string[] = []
+    scene.traverse((obj) => { if ((obj as THREE.Mesh).isMesh) names.push(obj.name) })
+    console.log('[BrainPointCloud] mesh names:', names)
+  }, [scene])
+
   const { buckets: regionBuckets, groupPosition, groupScale } = useMemo(
     () => extractRegionBuckets(scene),
     [scene]
@@ -162,14 +169,15 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
         SECTIONS.map((sectionId) => [
           sectionId,
           new THREE.PointsMaterial({
-            size: 0.013,
+            size: 0.025,
             map: glowTexture,
             transparent: true,
-            blending: THREE.AdditiveBlending,
+            blending: THREE.NormalBlending,   // additive is invisible on light backgrounds
             depthWrite: false,
             sizeAttenuation: true,
-            color: new THREE.Color('#c8dcff'),
-            opacity: 0.6,
+            alphaTest: 0.01,
+            color: new THREE.Color('#4a7fbf'),
+            opacity: 0.85,
           }),
         ])
       ) as Record<SectionId, THREE.PointsMaterial>,
@@ -190,8 +198,8 @@ export default function BrainPointCloud({ activeSection, onRegionClick, isMobile
       const isActive = sectionId === activeSection
       const isChatbotActive = isActive && sectionId === 'chatbot'
 
-      const targetOpacity = isActive ? 1.0 : 0.45
-      const targetSize = isActive ? 0.022 : 0.012
+      const targetOpacity = isActive ? 1.0 : 0.75
+      const targetSize = isActive ? 0.038 : 0.022
       const targetColor = isActive
         ? _targetColor.set(REGION_CONFIGS[sectionId].color)
         : _idleColor
