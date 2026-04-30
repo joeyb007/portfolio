@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback, useRef, useLayoutEffect } from 'react'
+import { useState, useCallback, useRef, useLayoutEffect, Suspense } from 'react'
 import ScrollContent from '@/components/ScrollContent'
 import Section from '@/components/Section'
 import SlidePanel from '@/components/SlidePanel'
@@ -72,7 +72,9 @@ export default function Home() {
 
   return (
     <>
-      <BrainCanvas activeSection={activeSection} onRegionClick={handleRegionClick} />
+      <Suspense fallback={null}>
+        <BrainCanvas activeSection={activeSection} onRegionClick={handleRegionClick} />
+      </Suspense>
 
       <ScrollContent onSectionChange={handleSectionChange}>
         {(registerRef) => (

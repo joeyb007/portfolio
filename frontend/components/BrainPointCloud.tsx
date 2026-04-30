@@ -37,23 +37,28 @@ const _targetColor = new THREE.Color()
 const _idleColor = new THREE.Color('#c8dcff')
 
 function extractRegionBuckets(scene: THREE.Object3D): RegionBucket[] {
-  const allVerts: THREE.Vector3[] = []
+  // Count total vertices first (cheap — no allocation) so we can stride during collection
+  let totalVerts = 0
+  scene.traverse((obj) => {
+    if ((obj as THREE.Mesh).isMesh) totalVerts += (obj as THREE.Mesh).geometry.attributes.position.count
+  })
+
+  const step = totalVerts > MAX_POINTS ? Math.ceil(totalVerts / MAX_POINTS) : 1
+  const sampled: THREE.Vector3[] = []
+  const _v = new THREE.Vector3()
+  let globalIdx = 0
 
   scene.updateMatrixWorld(true)
   scene.traverse((obj) => {
     if (!(obj as THREE.Mesh).isMesh) return
     const mesh = obj as THREE.Mesh
     const pos = mesh.geometry.attributes.position
-    for (let i = 0; i < pos.count; i++) {
-      const v = new THREE.Vector3(pos.getX(i), pos.getY(i), pos.getZ(i))
-      v.applyMatrix4(mesh.matrixWorld)
-      allVerts.push(v)
+    for (let i = 0; i < pos.count; i++, globalIdx++) {
+      if (globalIdx % step !== 0) continue          // skip — subsample during traversal
+      _v.set(pos.getX(i), pos.getY(i), pos.getZ(i)).applyMatrix4(mesh.matrixWorld)
+      sampled.push(_v.clone())
     }
   })
-
-  // Subsample to MAX_POINTS
-  const step = allVerts.length > MAX_POINTS ? Math.ceil(allVerts.length / MAX_POINTS) : 1
-  const sampled = allVerts.filter((_, i) => i % step === 0)
 
   // Normalize to [-1, 1] using bounding box
   const box = new THREE.Box3()
