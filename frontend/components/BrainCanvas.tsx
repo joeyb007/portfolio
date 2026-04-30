@@ -9,9 +9,10 @@ import type { SectionId } from '@/lib/regionMap'
 interface Props {
   activeSection: SectionId | null
   onRegionClick: (sectionId: SectionId) => void
+  onRevealDone?: () => void
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
+export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone }: Props) {
   // isMobile starts false — this component must be loaded with ssr: false to avoid hydration mismatch
   const [isMobile, setIsMobile] = useState(false)
 
@@ -43,6 +44,7 @@ export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
           activeSection={activeSection}
           onRegionClick={onRegionClick}
           isMobile={isMobile}
+          onRevealDone={onRevealDone ?? (() => {})}
         />
         <OrbitControls
           enablePan={false}
