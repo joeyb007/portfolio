@@ -1,6 +1,6 @@
 'use client'
 
-import { Html, Line } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { REGION_CONFIGS, SECTIONS, type SectionId } from '@/lib/regionMap'
 
@@ -26,38 +26,17 @@ export default function BrainLabels({ centroids, activeSection, onRegionClick, i
 
         const cfg = REGION_CONFIGS[sectionId]
         const isActive = sectionId === activeSection
-        const color = isActive ? cfg.color : '#ffffff'
+        const color = isActive ? cfg.color : '#a0c8f0'
 
         // Push label outward from origin along centroid direction
         const labelPos = centroid.clone().multiplyScalar(LABEL_PUSH)
-        const dotPos: [number, number, number] = [centroid.x, centroid.y, centroid.z]
-        const lineEnd: [number, number, number] = [labelPos.x, labelPos.y, labelPos.z]
+        const labelVec: [number, number, number] = [labelPos.x, labelPos.y, labelPos.z]
 
         return (
           <group key={sectionId}>
-            {/* Surface dot */}
-            <mesh position={dotPos}>
-              <sphereGeometry args={[0.02, 8, 8]} />
-              <meshBasicMaterial
-                color={color}
-                transparent
-                opacity={isActive ? 1.0 : 0.6}
-              />
-            </mesh>
-
-            {/* Connecting line */}
-            <Line
-              points={[dotPos, lineEnd]}
-              color={color}
-              lineWidth={1}
-              dashed={false}
-              transparent
-              opacity={isActive ? 0.8 : 0.4}
-            />
-
-            {/* Label text */}
+            {/* Label text — no connecting line (it would pass through the brain) */}
             <Html
-              position={lineEnd}
+              position={labelVec}
               center={false}
               style={{ pointerEvents: 'auto' }}
             >
@@ -69,7 +48,7 @@ export default function BrainLabels({ centroids, activeSection, onRegionClick, i
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   color: color,
-                  opacity: isActive ? 1.0 : 0.6,
+                  opacity: isActive ? 1.0 : 0.55,
                   cursor: 'pointer',
                   userSelect: 'none',
                   whiteSpace: 'nowrap',
