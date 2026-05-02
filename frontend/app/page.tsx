@@ -91,7 +91,7 @@ export default function Home() {
           color:         'rgba(78,207,255,0.7)',
           margin:        '0 0 8px',
         }}>
-          AI Engineer · MLE
+          Builder · MLE · AI Engineer
         </p>
         <h1 style={{
           fontSize:   'clamp(1.8rem, 4vw, 3rem)',

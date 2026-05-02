@@ -8,6 +8,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "Joseph Barbosa",
   description: "AI Engineer & MLE",
+  icons: { icon: "/jb.png" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
