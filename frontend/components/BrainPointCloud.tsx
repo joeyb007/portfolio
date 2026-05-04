@@ -10,6 +10,16 @@ const TARGET_RADIUS = 1.3
 const BASE_SIZE     = 0.04
 const ACTIVE_SIZE   = 0.06
 
+// Bottom-to-top scan order (0 = first to appear, 1 = last)
+const REVEAL_ORDER: Record<string, number> = {
+  contact:    0.00,   // cerebellum — lowest
+  projects:   0.15,   // temporal posterior
+  experience: 0.30,   // temporal anterior
+  blog:       0.45,   // occipital
+  about:      0.60,   // frontal
+  personal:   0.80,   // parietal crown — highest
+}
+
 // Transfer "excess red" into the blue channel so red regions become blue,
 // while blues, whites, and grays are unchanged — preserves all original structure.
 function remapRedToBlue(r: number, g: number, b: number, out: Float32Array, i: number) {
@@ -149,7 +159,8 @@ export default function BrainPointCloud({
           new THREE.PointsMaterial({
             size:            BASE_SIZE,
             vertexColors:    true,
-            transparent:     false,
+            transparent:     true,   // needed so opacity animates during reveal
+            opacity:         0,      // starts invisible, scanned in during reveal
             blending:        THREE.NormalBlending,
             depthWrite:      true,
             sizeAttenuation: true,
@@ -189,7 +200,7 @@ export default function BrainPointCloud({
     }
   }, [entries, baseMaterials, glowMaterials])
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!revealDoneRef.current && groupRef.current) {
       revealRef.current = Math.min(1, revealRef.current + delta / 2.5)
       const p      = revealRef.current
@@ -204,27 +215,50 @@ export default function BrainPointCloud({
       )
       groupRef.current.scale.setScalar(groupScale * (0.01 + 0.99 * scaleE))
 
+      // Hologram scanline — each section materialises bottom-to-top with flicker
+      const elapsed = state.clock.elapsedTime
+      SECTIONS.forEach((sectionId) => {
+        const order        = REVEAL_ORDER[sectionId] ?? 0
+        // section starts appearing when p crosses its order threshold
+        const sectionP     = Math.max(0, Math.min(1, (p - order * 0.6) / 0.4))
+        const base         = baseMaterials[sectionId]
+        const glow         = glowMaterials[sectionId]
+
+        base.opacity = sectionP
+
+        // Flicker glow as each section scans in, then fade out
+        const flicker  = sectionP > 0 && sectionP < 1
+          ? Math.abs(Math.sin(elapsed * 22 + order * 8)) * 0.8
+          : 0
+        glow.opacity   = flicker * sectionP
+        // reset color multiplier for reveal (no dim/bright yet)
+        base.color.setScalar(1)
+      })
+
       if (p >= 1) {
         revealDoneRef.current = true
         groupRef.current.position.set(...groupPosition)
         groupRef.current.scale.setScalar(groupScale)
+        SECTIONS.forEach(id => {
+          baseMaterials[id].opacity = 1
+          glowMaterials[id].opacity = 0
+        })
         onRevealDoneRef.current()
       }
+      return  // skip normal highlight logic during reveal
     }
 
     const speed = 4
     SECTIONS.forEach((sectionId) => {
-      const isActive   = sectionId === activeSection
-      const base       = baseMaterials[sectionId]
-      const glow       = glowMaterials[sectionId]
-      const targetDim  = isActive ? 1.0 : 0.45
+      const isActive  = sectionId === activeSection
+      const base      = baseMaterials[sectionId]
+      const glow      = glowMaterials[sectionId]
+      const targetDim = isActive ? 1.0 : 0.45
 
-      // Dim/brighten the base layer
       base.color.r += (targetDim - base.color.r) * Math.min(1, delta * speed)
       base.color.g += (targetDim - base.color.g) * Math.min(1, delta * speed)
       base.color.b += (targetDim - base.color.b) * Math.min(1, delta * speed)
 
-      // Fade glow in/out
       glow.opacity += ((isActive ? 0.6 : 0) - glow.opacity) * Math.min(1, delta * speed)
     })
   })
