@@ -96,7 +96,7 @@ export default function Home() {
           Joseph Barbosa
         </h1>
         <p style={{ color: 'rgba(240,244,255,0.45)', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
-          Scroll or click a region to explore.
+          Scroll to explore.
         </p>
       </div>
 
