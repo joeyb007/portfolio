@@ -24,6 +24,7 @@ export default function Home() {
   const [activeSectionIdx, setActiveSectionIdx] = useState(0)
   const [panelOpen,        setPanelOpen]        = useState<SectionId | null>(null)
   const [chatOpen,         setChatOpen]         = useState(false)
+  const [uiVisible,        setUiVisible]        = useState(false)
 
   const activeSectionId = CONTENT_SECTIONS[activeSectionIdx]
 
@@ -60,10 +61,18 @@ export default function Home() {
         <BrainCanvas
           activeSection={activeSectionId}
           onRegionClick={handleRegionClick}
+          onRevealDone={() => setUiVisible(true)}
         />
       </Suspense>
 
       <ScrollContent onNext={goNext} onPrev={goPrev} />
+
+      {/* All UI fades in after brain reveal completes */}
+      <div style={{
+        opacity:    uiVisible ? 1 : 0,
+        transition: 'opacity 0.8s ease',
+        pointerEvents: uiVisible ? 'auto' : 'none',
+      }}>
 
       {/* Hero */}
       <div
@@ -170,6 +179,8 @@ export default function Home() {
       >
         <ChatPanel />
       </SlidePanel>
+
+      </div> {/* end fade-in wrapper */}
     </>
   )
 }

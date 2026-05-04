@@ -70,9 +70,10 @@ function AutoLevelControls({ enabled }: { enabled: boolean }) {
 interface Props {
   activeSection: SectionId | null
   onRegionClick: (sectionId: SectionId) => void
+  onRevealDone?: () => void
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
+export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone }: Props) {
   const [isMobile,   setIsMobile]   = useState(false)
   const [revealDone, setRevealDone] = useState(false)
 
@@ -105,7 +106,7 @@ export default function BrainCanvas({ activeSection, onRegionClick }: Props) {
           activeSection={activeSection}
           onRegionClick={onRegionClick}
           isMobile={isMobile}
-          onRevealDone={() => setRevealDone(true)}
+          onRevealDone={() => { setRevealDone(true); onRevealDone?.() }}
         />
 
         <AutoLevelControls enabled={revealDone} />

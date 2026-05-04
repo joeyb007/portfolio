@@ -65,24 +65,38 @@ export default function SectionCard({ activeSectionId, onOpen }: Props) {
     >
       <p style={{
         fontFamily:    'var(--font-geist-mono), monospace',
-        fontSize:      10,
+        fontSize:      9,
         letterSpacing: '0.14em',
         textTransform: 'uppercase',
         color:         cfg.color,
-        margin:        '0 0 10px',
+        margin:        '0 0 4px',
       }}>
-        {cfg.label}
+        {cfg.lobe}
       </p>
       <h2 style={{
         fontSize:   22,
         fontWeight: 600,
         color:      '#f0f4ff',
-        margin:     '0 0 8px',
+        margin:     '0 0 10px',
         lineHeight: 1.2,
       }}>
         {title}
       </h2>
-      <p style={{ color: 'rgba(240,244,255,0.45)', fontSize: 12, margin: 0 }}>
+      <p style={{
+        color:      'rgba(240,244,255,0.55)',
+        fontSize:   13,
+        lineHeight: 1.6,
+        margin:     '0 0 16px',
+      }}>
+        {cfg.description}
+      </p>
+      <p style={{
+        fontFamily:    'var(--font-geist-mono), monospace',
+        fontSize:      10,
+        letterSpacing: '0.1em',
+        color:         'rgba(125,216,255,0.5)',
+        margin:        0,
+      }}>
         Click to open →
       </p>
     </div>

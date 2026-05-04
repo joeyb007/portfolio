@@ -202,18 +202,12 @@ export default function BrainPointCloud({
 
   useFrame((state, delta) => {
     if (!revealDoneRef.current && groupRef.current) {
-      revealRef.current = Math.min(1, revealRef.current + delta / 2.5)
-      const p      = revealRef.current
-      const ease   = 1 - Math.pow(1 - p, 3)
-      const scaleT = Math.min(1, p / 0.6)
-      const scaleE = 1 - Math.pow(1 - scaleT, 3)
+      // Place at final position immediately — only the scanline animates
+      groupRef.current.position.set(...groupPosition)
+      groupRef.current.scale.setScalar(groupScale)
 
-      groupRef.current.position.set(
-        groupPosition[0],
-        groupPosition[1] - 2.5 * (1 - ease),
-        groupPosition[2]
-      )
-      groupRef.current.scale.setScalar(groupScale * (0.01 + 0.99 * scaleE))
+      revealRef.current = Math.min(1, revealRef.current + delta / 2.5)
+      const p = revealRef.current
 
       // Hologram scanline — each section materialises bottom-to-top with flicker
       const elapsed = state.clock.elapsedTime
