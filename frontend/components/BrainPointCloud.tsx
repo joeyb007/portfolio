@@ -5,7 +5,6 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { SECTIONS, type SectionId } from '@/lib/regionMap'
-import BrainLabels from './BrainLabels'
 
 const TARGET_RADIUS = 1.3
 const BASE_SIZE     = 0.04
@@ -24,14 +23,12 @@ function remapRedToBlue(r: number, g: number, b: number, out: Float32Array, i: n
 interface PointsEntry {
   geometry:  THREE.BufferGeometry
   sectionId: SectionId
-  centroid:  THREE.Vector3
 }
 
 interface SetupResult {
   entries:       PointsEntry[]
   groupPosition: [number, number, number]
   groupScale:    number
-  centroids:     Partial<Record<SectionId, THREE.Vector3>>
 }
 
 // Assign a single vertex to a brain lobe based on its normalised XY position.
@@ -66,11 +63,8 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
   const range = Math.max(sz.x, sz.y, sz.z) / 2 || 1
   const s = TARGET_RADIUS / range
 
-  // Per-lobe accumulators — built per vertex, not per slice object
-  const posAcc  = Object.fromEntries(SECTIONS.map(id => [id, [] as number[]])) as Record<SectionId, number[]>
-  const colAcc  = Object.fromEntries(SECTIONS.map(id => [id, [] as number[]])) as Record<SectionId, number[]>
-  const cSums   = Object.fromEntries(SECTIONS.map(id => [id, new THREE.Vector3()])) as Record<SectionId, THREE.Vector3>
-  const cCounts = Object.fromEntries(SECTIONS.map(id => [id, 0])) as Record<SectionId, number>
+  const posAcc = Object.fromEntries(SECTIONS.map(id => [id, [] as number[]])) as Record<SectionId, number[]>
+  const colAcc = Object.fromEntries(SECTIONS.map(id => [id, [] as number[]])) as Record<SectionId, number[]>
 
   const _v  = new THREE.Vector3()
   const _cr = new Float32Array(3)
@@ -103,9 +97,6 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
       if (col) remapRedToBlue(col.getX(i), col.getY(i), col.getZ(i), _cr, 0)
       else      remapRedToBlue(matR, matG, matB, _cr, 0)
       colAcc[id].push(_cr[0], _cr[1], _cr[2])
-
-      cSums[id].add(_v)
-      cCounts[id]++
     }
   })
 
@@ -113,22 +104,13 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(posAcc[sectionId]), 3))
     geo.setAttribute('color',    new THREE.BufferAttribute(new Float32Array(colAcc[sectionId]), 3))
-    const centroid = cCounts[sectionId] > 0
-      ? cSums[sectionId].clone().divideScalar(cCounts[sectionId])
-      : center.clone()
-    return { geometry: geo, sectionId, centroid }
-  })
-
-  const centroids: Partial<Record<SectionId, THREE.Vector3>> = {}
-  SECTIONS.forEach(id => {
-    if (cCounts[id] > 0) centroids[id] = cSums[id].clone().divideScalar(cCounts[id])
+    return { geometry: geo, sectionId }
   })
 
   return {
     entries,
     groupPosition: [-s * center.x, -s * center.y, -s * center.z],
     groupScale:    s,
-    centroids,
   }
 }
 
@@ -152,7 +134,7 @@ export default function BrainPointCloud({
   const onRevealDoneRef = useRef(onRevealDone)
   useEffect(() => { onRevealDoneRef.current = onRevealDone })
 
-  const { entries, groupPosition, groupScale, centroids } = useMemo(
+  const { entries, groupPosition, groupScale } = useMemo(
     () => buildBlueBrain(scene),
     [scene]
   )
@@ -255,12 +237,6 @@ export default function BrainPointCloud({
           <points geometry={entry.geometry} material={glowMaterials[entry.sectionId]} />
         </group>
       ))}
-      <BrainLabels
-        centroids={centroids}
-        activeSection={activeSection}
-        onRegionClick={onRegionClick}
-        isMobile={isMobile}
-      />
     </group>
   )
 }
