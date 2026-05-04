@@ -31,11 +31,11 @@ export default function Home() {
   useLayoutEffect(() => { panelOpenRef.current = panelOpen }, [panelOpen])
 
   const goNext = useCallback(() => {
-    setActiveSectionIdx((i) => Math.min(i + 1, CONTENT_SECTIONS.length - 1))
+    setActiveSectionIdx((i) => (i + 1) % CONTENT_SECTIONS.length)
   }, [])
 
   const goPrev = useCallback(() => {
-    setActiveSectionIdx((i) => Math.max(i - 1, 0))
+    setActiveSectionIdx((i) => (i - 1 + CONTENT_SECTIONS.length) % CONTENT_SECTIONS.length)
   }, [])
 
   const goTo = useCallback((sectionId: SectionId) => {
