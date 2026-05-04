@@ -6,11 +6,9 @@ import { REGION_CONFIGS, CONTENT_SECTIONS, type SectionId } from '@/lib/regionMa
 const PANEL_TITLES: Record<SectionId, string> = {
   about:      'About',
   experience: 'Experience',
-  skills:     'Skills',
   projects:   'Projects',
   blog:       'Blog',
   personal:   'Personal',
-  chatbot:    'Chat with Joseph',
   contact:    'Contact',
 }
 

@@ -7,25 +7,23 @@ import SlidePanel from '@/components/SlidePanel'
 import ChatPanel from '@/components/ChatPanel'
 import SectionCard from '@/components/SectionCard'
 import SectionIndicator from '@/components/SectionIndicator'
-import { REGION_CONFIGS, CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
+import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
 
-// ssr: false required — Three.js uses browser APIs unavailable in Node
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), { ssr: false })
 
 const PANEL_TITLES: Record<SectionId, string> = {
   about:      'About',
   experience: 'Experience',
-  skills:     'Skills',
   projects:   'Projects',
   blog:       'Blog',
   personal:   'Personal',
-  chatbot:    'Chat with Joseph',
   contact:    'Contact',
 }
 
 export default function Home() {
   const [activeSectionIdx, setActiveSectionIdx] = useState(0)
   const [panelOpen,        setPanelOpen]        = useState<SectionId | null>(null)
+  const [chatOpen,         setChatOpen]         = useState(false)
 
   const activeSectionId = CONTENT_SECTIONS[activeSectionIdx]
 
@@ -46,11 +44,6 @@ export default function Home() {
   }, [])
 
   const handleRegionClick = useCallback((sectionId: SectionId) => {
-    const cfg = REGION_CONFIGS[sectionId]
-    if (cfg.isChatbot) {
-      setPanelOpen('chatbot')
-      return
-    }
     goTo(sectionId)
     setTimeout(() => setPanelOpen(sectionId), 400)
   }, [goTo])
@@ -72,7 +65,7 @@ export default function Home() {
 
       <ScrollContent onNext={goNext} onPrev={goPrev} />
 
-      {/* Hero — always visible bottom-left */}
+      {/* Hero */}
       <div
         style={{
           position:      'fixed',
@@ -117,18 +110,65 @@ export default function Home() {
         onDotClick={goTo}
       />
 
+      {/* Floating chat button */}
+      <button
+        onClick={() => setChatOpen(true)}
+        style={{
+          position:        'fixed',
+          bottom:          '2.5vh',
+          left:            '5vw',
+          zIndex:          20,
+          display:         'flex',
+          alignItems:      'center',
+          gap:             8,
+          background:      'rgba(5,10,20,0.8)',
+          border:          '1px solid rgba(125,216,255,0.25)',
+          borderRadius:    24,
+          padding:         '8px 16px',
+          color:           'rgba(125,216,255,0.8)',
+          fontSize:        11,
+          fontFamily:      'var(--font-geist-mono), monospace',
+          letterSpacing:   '0.1em',
+          textTransform:   'uppercase',
+          cursor:          'pointer',
+          backdropFilter:  'blur(12px)',
+          transition:      'border-color 0.2s, color 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = 'rgba(125,216,255,0.6)'
+          e.currentTarget.style.color = 'rgba(125,216,255,1)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = 'rgba(125,216,255,0.25)'
+          e.currentTarget.style.color = 'rgba(125,216,255,0.8)'
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        Chat with Joseph
+      </button>
+
+      {/* Section slide panel */}
       <SlidePanel
         open={panelOpen !== null}
         onClose={closePanel}
         title={panelOpen ? PANEL_TITLES[panelOpen] : ''}
       >
-        {panelOpen === 'chatbot' ? (
-          <ChatPanel />
-        ) : panelOpen ? (
+        {panelOpen ? (
           <p style={{ color: 'rgba(240,244,255,0.6)', fontSize: 14, lineHeight: 1.7 }}>
             Content for <strong style={{ color: '#f0f4ff' }}>{panelOpen}</strong> coming in Phase 2.
           </p>
         ) : null}
+      </SlidePanel>
+
+      {/* Chat slide panel */}
+      <SlidePanel
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        title="Chat with Joseph"
+      >
+        <ChatPanel />
       </SlidePanel>
     </>
   )
