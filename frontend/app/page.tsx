@@ -8,6 +8,7 @@ import ChatPanel from '@/components/ChatPanel'
 import SectionCard from '@/components/SectionCard'
 import SectionIndicator from '@/components/SectionIndicator'
 import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
+import SectionContent from '@/components/SectionContent'
 
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), { ssr: false })
 
@@ -220,10 +221,27 @@ export default function Home() {
         onClose={closePanel}
         title={panelOpen ? PANEL_TITLES[panelOpen] : ''}
       >
-        {panelOpen ? (
-          <p style={{ color: 'rgba(240,244,255,0.6)', fontSize: 14, lineHeight: 1.7 }}>
-            Content for <strong style={{ color: '#f0f4ff' }}>{panelOpen}</strong> coming in Phase 2.
-          </p>
+        {panelOpen === 'blog' ? (
+          <div>
+            <p style={{ color: 'rgba(240,244,255,0.6)', fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' }}>
+              Writing on AI, ML systems, and whatever I&apos;m currently building or thinking about.
+            </p>
+            <p style={{
+              display: 'inline-block',
+              fontFamily: 'var(--font-geist-mono), monospace',
+              fontSize: 10,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(125,216,255,0.5)',
+              border: '1px solid rgba(125,216,255,0.2)',
+              borderRadius: 4,
+              padding: '4px 10px',
+            }}>
+              Coming Soon
+            </p>
+          </div>
+        ) : panelOpen ? (
+          <SectionContent sectionId={panelOpen} onSectionOpen={setPanelOpen} />
         ) : null}
       </SlidePanel>
 
