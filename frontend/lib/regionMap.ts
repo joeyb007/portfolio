@@ -54,14 +54,3 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     description: 'Coordination and reach. Let\'s connect, collaborate, or just talk.',
   },
 }
-
-// Maps a normalised point [-1,1] to a brain lobe / section.
-// Lobes (front→back, top→bottom): frontal, parietal, temporal, occipital, limbic, cerebellum
-export function getSectionForPoint(nx: number, ny: number, nz: number): SectionId {
-  if (ny < -0.3)              return 'contact'     // cerebellum — lower back
-  if (nz < -0.15 && ny > 0)  return 'blog'        // occipital   — back upper
-  if (ny > 0.3)               return 'personal'    // parietal    — crown
-  if (nz > 0.1 && ny > 0)    return 'about'       // frontal     — front upper
-  if (Math.abs(ny) < 0.2)    return 'experience'  // temporal    — mid band
-  return 'projects'                                // remaining
-}
