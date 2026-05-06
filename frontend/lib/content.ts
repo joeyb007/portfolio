@@ -132,14 +132,15 @@ export const experience: ExperienceEntry[] = [
 // ---------------------------------------------------------------------------
 export const projects: ProjectEntry[] = [
   {
-    name:        'Project Name',
-    description: 'One sentence on what it is and why it exists.',
+    name:        'Scholr',
+    description: 'AI research assistant that grounds LLM responses in scientific research',
     bullets: [
-      'Key technical detail or design decision.',
-      'Result, scale, or impact.',
+      'Aggregates results from 200M+ peer-reviewed papers',
+      'Uses a multi-agent architecture to recursively generate queries, aggregate results, and expand',
+      'Exposed both via TUI and as a callable MCP tool for Claude integration'
     ],
-    tags:   ['Next.js', 'FastAPI', 'LLM'],
-    github: 'https://github.com/joeyb007/project',
+    tags:   ['Pydantic', 'OpenAI API', 'LLMs', 'Agentic Architecture'],
+    github: 'https://github.com/joeyb007/Scholr',
   },
 ]
 
