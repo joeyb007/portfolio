@@ -136,7 +136,7 @@ export const projects: ProjectEntry[] = [
     description: 'AI research assistant that grounds LLM responses in scientific research',
     bullets: [
       'Aggregates results from 200M+ peer-reviewed papers',
-      'Uses a multi-agent architecture to recursively generate queries, aggregate results, and expand',
+      'Uses a multi-agent architecture to recursively generate queries, aggregate results, and expand into related subtopics',
       'Exposed both via TUI and as a callable MCP tool for Claude integration'
     ],
     tags:   ['Pydantic', 'OpenAI API', 'LLMs', 'Agentic Architecture'],
