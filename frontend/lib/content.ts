@@ -59,6 +59,7 @@ export interface PhotoEntry {
 
 export interface PersonalContent {
   paragraphs: string[]
+  onMind?:    string
   photos?:    PhotoEntry[]
   podcasts?:  PodcastEntry[]
   interests:  { emoji: string; label: string; description: string }[]
@@ -168,6 +169,7 @@ export const personal: PersonalContent = {
     { src: '/photos/p3.png', caption: '' },
     { src: '/photos/p4.png', caption: '' },
   ],
+  onMind: 'Why are AI models, with goals of exceeding human intelligence, modelled based on human neuron biology?',
   podcasts: [
     { name: "Dwarkesh Podcast",  href: "https://open.spotify.com/show/6IkQL7zQ8aBxFMtLmAuTHU", cover: "/podcasts/dwarkesh.jpg" },
     { name: "Lenny's Podcast",   href: "https://open.spotify.com/show/2dR1MUZEHCOnz1LVfNac0j", cover: "/podcasts/lennys.jpeg" },

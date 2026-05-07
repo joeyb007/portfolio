@@ -470,6 +470,26 @@ function PersonalSection() {
         ))}
       </div>
 
+      {personal.onMind && (
+        <>
+          <Divider />
+          <div>
+            <SectionHeading>On My Mind</SectionHeading>
+            <div style={{
+              background:   'rgba(125,216,255,0.03)',
+              border:       '1px solid rgba(125,216,255,0.08)',
+              borderLeft:   '2px solid rgba(125,216,255,0.35)',
+              borderRadius: '0 8px 8px 0',
+              padding:      '12px 16px',
+            }}>
+              <p style={{ color: 'rgba(240,244,255,0.75)', fontSize: 13, lineHeight: 1.75, margin: 0, fontStyle: 'italic' }}>
+                {personal.onMind}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
+
       {(personal.photos?.length || personal.podcasts?.length) ? (
         <>
           <Divider />
