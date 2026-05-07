@@ -46,8 +46,21 @@ export interface AboutContent {
   highlights?: { label: string; value: string }[]
 }
 
+export interface PodcastEntry {
+  name:  string
+  href:  string
+  cover: string
+}
+
+export interface PhotoEntry {
+  src:      string
+  caption?: string
+}
+
 export interface PersonalContent {
   paragraphs: string[]
+  photos?:    PhotoEntry[]
+  podcasts?:  PodcastEntry[]
   interests:  { emoji: string; label: string; description: string }[]
 }
 
@@ -147,20 +160,37 @@ export const projects: ProjectEntry[] = [
 // ---------------------------------------------------------------------------
 // PERSONAL
 // ---------------------------------------------------------------------------
+
 export const personal: PersonalContent = {
+  photos: [
+    { src: '/photos/p1.png', caption: '' },
+    { src: '/photos/p2.png', caption: '' },
+    { src: '/photos/p3.png', caption: '' },
+    { src: '/photos/p4.png', caption: '' },
+  ],
+  podcasts: [
+    { name: "Dwarkesh Podcast",  href: "https://open.spotify.com/show/6IkQL7zQ8aBxFMtLmAuTHU", cover: "/podcasts/dwarkesh.jpg" },
+    { name: "Lenny's Podcast",   href: "https://open.spotify.com/show/2dR1MUZEHCOnz1LVfNac0j", cover: "/podcasts/lennys.jpeg" },
+    { name: "Morning Brew",      href: "https://open.spotify.com/show/0HoRR2bOt3jt5VzAbf1CyB", cover: "/podcasts/morningbrew.avif" },
+  ],
   paragraphs: [
-    'Outside of tech, I spend a lot of time staying active and in the kitchen.',
+    'When I\'m not knee-deep in a Jupyter Notebook or VSCode session, I\'m:  ',
   ],
   interests: [
     {
       emoji:       '🏋️',
-      label:       'Fitness',
-      description: 'Add a line about your training, sport, or routine.',
+      label:       'Exercising',
+      description: 'Currently training for a full marathon and chasing a 225lb bench',
     },
     {
       emoji:       '🍳',
       label:       'Cooking',
-      description: 'Add a line about what you cook or your food interests.',
+      description: 'Usually optimized for macros. Learning new recipes via LLMs weekly!',
+    },
+    {
+      emoji:       '💼',
+      label:       'Casing',
+      description: 'Participated in 12+ business case compeitions; $3000+ in winnings.',
     },
   ],
 }
@@ -170,7 +200,7 @@ export const personal: PersonalContent = {
 // ---------------------------------------------------------------------------
 export const contact: ContactContent = {
   paragraphs: [
-    "I'm always open to interesting conversations — whether it's a role, a project, or just a good idea.",
+    "Always open to interesting conversations. Feel free to reach out:",
   ],
   email: 'josephbarbosa416@gmail.com',
   links: [

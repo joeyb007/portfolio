@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import type { SectionId } from '@/lib/regionMap'
 import { about, experience, projects, personal, contact } from '@/lib/content'
 
@@ -307,6 +308,148 @@ function ProjectsSection() {
   )
 }
 
+interface SpotifyTrack {
+  isPlaying: boolean
+  title?:    string
+  artist?:   string
+  albumArt?: string
+  songUrl?:  string
+}
+
+function SlidingCarousel({ photos }: { photos: { src: string; caption?: string }[] }) {
+  const stripRef = useRef<HTMLDivElement>(null)
+  const countRef = useRef(0)
+  const extended = [...photos, photos[0]]
+  const total    = extended.length
+
+  useEffect(() => {
+    if (photos.length < 2) return
+    const strip = stripRef.current
+    if (!strip) return
+
+    strip.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1)'
+
+    const id = setInterval(() => {
+      countRef.current += 1
+      const n = countRef.current
+      strip.style.transform = `translateX(-${(n / total) * 100}%)`
+
+      if (n === photos.length) {
+        setTimeout(() => {
+          strip.style.transition = 'none'
+          strip.style.transform  = 'translateX(0)'
+          countRef.current = 0
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            strip.style.transition = 'transform 0.6s cubic-bezier(0.4,0,0.2,1)'
+          }))
+        }, 650)
+      }
+    }, 3000)
+
+    return () => clearInterval(id)
+  }, [photos.length, total])
+
+  if (photos.length === 0) return null
+
+  return (
+    <div style={{ width: '100%', height: 220, borderRadius: 10, overflow: 'hidden' }}>
+      <div
+        ref={stripRef}
+        style={{ display: 'flex', width: `${total * 100}%`, height: '100%', transform: 'translateX(0)' }}
+      >
+        {extended.map(({ src, caption }, i) => (
+          <div key={i} style={{ position: 'relative', width: `${100 / total}%`, height: '100%', flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={caption ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {caption && (
+              <div style={{
+                position:   'absolute', bottom: 0, left: 0, right: 0,
+                background: 'rgba(0,0,0,0.45)',
+                padding:    '6px 10px',
+              }}>
+                <p style={{ color: '#f0f4ff', fontSize: 11, margin: 0, lineHeight: 1.4 }}>{caption}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SpotifyWidget() {
+  const [track, setTrack] = useState<SpotifyTrack | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('/api/spotify')
+        setTrack(await res.json())
+      } catch { /* silent fail */ }
+    }
+    load()
+    const id = setInterval(load, 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  return (
+    <a
+      href={track?.songUrl ?? 'https://open.spotify.com'}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        display:      'flex',
+        alignItems:   'center',
+        gap:          10,
+        background:   'rgba(125,216,255,0.04)',
+        border:       '1px solid rgba(125,216,255,0.1)',
+        borderRadius: 8,
+        padding:      '10px 12px',
+        textDecoration: 'none',
+      }}
+    >
+      {track?.albumArt ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={track.albumArt} alt="album art" style={{ width: 36, height: 36, borderRadius: 4, flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: 36, height: 36, borderRadius: 4, background: 'rgba(125,216,255,0.08)', flexShrink: 0 }} />
+      )}
+      <div style={{ minWidth: 0 }}>
+        <p style={{ ...mono, color: 'rgba(125,216,255,0.5)', margin: '0 0 3px' }}>
+          {track?.isPlaying ? '▶ Now Playing' : 'Last Played'}
+        </p>
+        <p style={{ color: '#f0f4ff', fontSize: 12, fontWeight: 600, margin: '0 0 1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {track?.title ?? '—'}
+        </p>
+        <p style={{ color: 'rgba(240,244,255,0.45)', fontSize: 11, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {track?.artist ?? '—'}
+        </p>
+      </div>
+      <svg style={{ marginLeft: 'auto', flexShrink: 0 }} width="14" height="14" viewBox="0 0 24 24" fill="#1DB954">
+        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+      </svg>
+    </a>
+  )
+}
+
+function PodcastShelf({ podcasts }: { podcasts: { name: string; href: string; cover: string }[] }) {
+  return (
+    <div>
+      <SectionHeading>Podcasts</SectionHeading>
+      <div style={{ display: 'flex', gap: 10 }}>
+        {podcasts.map(({ name, href, cover }) => (
+          <a key={name} href={href} target="_blank" rel="noopener noreferrer"
+            style={{ flex: 1, textDecoration: 'none' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={cover} alt={name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+            <p style={{ color: 'rgba(240,244,255,0.5)', fontSize: 10, margin: '5px 0 0', textAlign: 'center', lineHeight: 1.3 }}>{name}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function PersonalSection() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -315,7 +458,6 @@ function PersonalSection() {
           {p}
         </p>
       ))}
-      <Divider />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {personal.interests.map(({ emoji, label, description }) => (
           <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
@@ -327,6 +469,28 @@ function PersonalSection() {
           </div>
         ))}
       </div>
+
+      {(personal.photos?.length || personal.podcasts?.length) ? (
+        <>
+          <Divider />
+          <div style={{ display: 'flex', gap: 16 }}>
+            {personal.photos && personal.photos.length > 0 && (
+              <div style={{ width: 'calc(50% - 8px)', flexShrink: 0 }}>
+                <SlidingCarousel photos={personal.photos} />
+              </div>
+            )}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <SectionHeading>Listening</SectionHeading>
+                <SpotifyWidget />
+              </div>
+              {personal.podcasts && personal.podcasts.length > 0 && (
+                <PodcastShelf podcasts={personal.podcasts} />
+              )}
+            </div>
+          </div>
+        </>
+      ) : null}
     </div>
   )
 }
