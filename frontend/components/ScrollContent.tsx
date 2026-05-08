@@ -28,7 +28,18 @@ export default function ScrollContent({ onNext, onPrev, children }: Props) {
   }, [])
 
   useEffect(() => {
+    const insideScrollable = (target: EventTarget | null): boolean => {
+      let node = target as HTMLElement | null
+      while (node && node !== document.body) {
+        const ov = window.getComputedStyle(node).overflowY
+        if ((ov === 'auto' || ov === 'scroll') && node.scrollHeight > node.clientHeight) return true
+        node = node.parentElement
+      }
+      return false
+    }
+
     const onWheel = (e: WheelEvent) => {
+      if (insideScrollable(e.target)) return
       e.preventDefault()
       if (Math.abs(e.deltaY) < 10) return
       trigger(e.deltaY > 0 ? 'next' : 'prev')
