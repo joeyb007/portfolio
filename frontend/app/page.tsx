@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useCallback, useEffect, Suspense } from 'react'
 import ScrollContent from '@/components/ScrollContent'
-import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
+import { CONTENT_SECTIONS, type SectionId, REGION_CONFIGS } from '@/lib/regionMap'
 import ChatBar from '@/components/ChatBar'
 import ChatThread, { type ChatMessage } from '@/components/ChatThread'
 
@@ -160,6 +160,43 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      {isMobile && activeSectionId && (
+        <div style={{
+          position:             'fixed',
+          top:                  '52vh',
+          left:                 '5vw',
+          right:                '5vw',
+          zIndex:               10,
+          background:           'rgba(5,10,20,0.82)',
+          backdropFilter:       'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border:               '1px solid rgba(125,216,255,0.18)',
+          borderLeft:           '2px solid rgba(125,216,255,0.55)',
+          borderRadius:         '0 8px 8px 0',
+          padding:              '12px 16px',
+          boxShadow:            '0 0 24px rgba(125,216,255,0.1)',
+        }}>
+          <p style={{
+            fontFamily:    'var(--font-geist-mono), monospace',
+            fontSize:      9,
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase' as const,
+            color:         'rgba(125,216,255,0.5)',
+            margin:        '0 0 4px',
+          }}>
+            {REGION_CONFIGS[activeSectionId].lobe}
+          </p>
+          <p style={{ color: '#f0f4ff', fontSize: 14, fontWeight: 600, margin: '0 0 8px', lineHeight: 1.2 }}>
+            {REGION_CONFIGS[activeSectionId].label}
+          </p>
+          <ul style={{ margin: 0, padding: '0 0 0 14px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {REGION_CONFIGS[activeSectionId].hologramBullets.map((b: string, i: number) => (
+              <li key={i} style={{ color: 'rgba(240,244,255,0.6)', fontSize: 11, lineHeight: 1.6 }}>{b}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <ChatThread messages={messages} loading={chatLoading} isMobile={isMobile} />
       <ChatBar    onSend={handleSend} loading={chatLoading} />
