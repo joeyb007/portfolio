@@ -1,17 +1,30 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback, Suspense } from 'react'
+import { useState, useCallback, useEffect, Suspense } from 'react'
 import ScrollContent from '@/components/ScrollContent'
 import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
+import ChatBar from '@/components/ChatBar'
+import ChatThread, { type ChatMessage } from '@/components/ChatThread'
 
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), { ssr: false })
 
 export default function Home() {
   const [activeSectionIdx, setActiveSectionIdx] = useState(0)
   const [uiVisible,        setUiVisible]        = useState(false)
+  const [messages,    setMessages]    = useState<ChatMessage[]>([])
+  const [chatLoading, setChatLoading] = useState(false)
+  const [isMobile,    setIsMobile]    = useState(false)
 
   const activeSectionId = CONTENT_SECTIONS[activeSectionIdx]
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    setIsMobile(mq.matches)
+    const h = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', h)
+    return () => mq.removeEventListener('change', h)
+  }, [])
 
   const goNext = useCallback(() => {
     setActiveSectionIdx((i) => (i + 1) % CONTENT_SECTIONS.length)
@@ -24,6 +37,17 @@ export default function Home() {
   const goTo = useCallback((sectionId: SectionId) => {
     const idx = CONTENT_SECTIONS.indexOf(sectionId)
     if (idx >= 0) setActiveSectionIdx(idx)
+  }, [])
+
+  const handleSend = useCallback(async (text: string) => {
+    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: text }
+    setMessages(prev => [...prev, userMsg])
+    setChatLoading(true)
+    await new Promise(r => setTimeout(r, 600))
+    setMessages(prev => [...prev, {
+      id: crypto.randomUUID(), role: 'assistant', content: 'Full chat coming in Task 11.',
+    }])
+    setChatLoading(false)
   }, [])
 
   return (
@@ -135,6 +159,9 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <ChatThread messages={messages} loading={chatLoading} isMobile={isMobile} />
+      <ChatBar    onSend={handleSend} loading={chatLoading} />
 
       </div> {/* end fade-in wrapper */}
     </>
