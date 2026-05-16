@@ -39,6 +39,7 @@ interface SetupResult {
   entries:       PointsEntry[]
   groupPosition: [number, number, number]
   groupScale:    number
+  centroids:     Record<SectionId, [number, number, number]>
 }
 
 // Assign a single vertex to a brain lobe based on its normalised XY position.
@@ -110,6 +111,24 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
     }
   })
 
+  // Compute scene-space centroid for each lobe.
+  // posAcc values are in the source model's world space.
+  // The group applies: scene_pos = groupPosition + groupScale * posAcc_pos
+  // Therefore: centroid_scene = s * (mean(posAcc[id]) - center)
+  const centroids = {} as Record<SectionId, [number, number, number]>
+  SECTIONS.forEach(id => {
+    const pos = posAcc[id]
+    if (pos.length === 0) { centroids[id] = [0, 0, 0]; return }
+    const n = pos.length / 3
+    let x = 0, y = 0, z = 0
+    for (let i = 0; i < pos.length; i += 3) { x += pos[i]; y += pos[i + 1]; z += pos[i + 2] }
+    centroids[id] = [
+      -s * center.x + s * (x / n),
+      -s * center.y + s * (y / n),
+      -s * center.z + s * (z / n),
+    ]
+  })
+
   const entries: PointsEntry[] = SECTIONS.map(sectionId => {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(posAcc[sectionId]), 3))
@@ -117,18 +136,18 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
     return { geometry: geo, sectionId }
   })
 
-  return {
-    entries,
-    groupPosition: [-s * center.x, -s * center.y, -s * center.z],
-    groupScale:    s,
-  }
+  const groupPosition: [number, number, number] = [-s * center.x, -s * center.y, -s * center.z]
+  const groupScale = s
+
+  return { entries, groupPosition, groupScale, centroids }
 }
 
 interface Props {
-  activeSection: SectionId | null
-  onRegionClick: (sectionId: SectionId) => void
-  isMobile:      boolean
-  onRevealDone:  () => void
+  activeSection:    SectionId | null
+  onRegionClick:    (sectionId: SectionId) => void
+  isMobile:         boolean
+  onRevealDone:     () => void
+  onCentroidsReady: (centroids: Record<SectionId, [number, number, number]>) => void
 }
 
 export default function BrainPointCloud({
@@ -136,6 +155,7 @@ export default function BrainPointCloud({
   onRegionClick,
   isMobile,
   onRevealDone,
+  onCentroidsReady,
 }: Props) {
   const { scene } = useGLTF('/brain.glb')
   const groupRef  = useRef<THREE.Group>(null)
@@ -143,11 +163,14 @@ export default function BrainPointCloud({
   const revealDoneRef   = useRef(false)
   const onRevealDoneRef = useRef(onRevealDone)
   useEffect(() => { onRevealDoneRef.current = onRevealDone })
+  const onCentroidsReadyRef = useRef(onCentroidsReady)
+  useEffect(() => { onCentroidsReadyRef.current = onCentroidsReady })
 
-  const { entries, groupPosition, groupScale } = useMemo(
+  const { entries, groupPosition, groupScale, centroids } = useMemo(
     () => buildBlueBrain(scene),
     [scene]
   )
+  useEffect(() => { onCentroidsReadyRef.current(centroids) }, [centroids])
 
   // Base layer — solid NormalBlending, vertex colors. Inactive sections are
   // dimmed via material.color multiplier so the active region stands out.
