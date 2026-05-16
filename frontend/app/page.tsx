@@ -57,6 +57,7 @@ export default function Home() {
           activeSection={activeSectionId}
           onRegionClick={goTo}
           onRevealDone={() => setUiVisible(true)}
+          isMobile={isMobile}
         />
       </Suspense>
 

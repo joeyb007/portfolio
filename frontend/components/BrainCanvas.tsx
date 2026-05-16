@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import BrainPointCloud from './BrainPointCloud'
+import HologramCard from './HologramCard'
 import type { SectionId } from '@/lib/regionMap'
 
 // Renders OrbitControls and auto-levels the polar angle back to PI/2 after
@@ -71,19 +72,12 @@ interface Props {
   activeSection: SectionId | null
   onRegionClick: (sectionId: SectionId) => void
   onRevealDone?: () => void
+  isMobile:      boolean
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone }: Props) {
-  const [isMobile,   setIsMobile]   = useState(false)
+export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone, isMobile }: Props) {
   const [revealDone, setRevealDone] = useState(false)
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)')
-    setIsMobile(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
+  const [centroids,  setCentroids]  = useState<Record<SectionId, [number, number, number]> | null>(null)
 
   return (
     <div
@@ -107,9 +101,18 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
           onRegionClick={onRegionClick}
           isMobile={isMobile}
           onRevealDone={() => { setRevealDone(true); onRevealDone?.() }}
+          onCentroidsReady={setCentroids}
         />
 
-        <AutoLevelControls enabled={revealDone} />
+        {centroids && activeSection && revealDone && (
+          <HologramCard
+            sectionId={activeSection}
+            position={centroids[activeSection]}
+            visible={true}
+          />
+        )}
+
+        <AutoLevelControls enabled={revealDone && !isMobile} />
       </Canvas>
     </div>
   )
