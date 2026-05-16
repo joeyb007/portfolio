@@ -1,36 +1,17 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback, useRef, useLayoutEffect, Suspense } from 'react'
+import { useState, useCallback, Suspense } from 'react'
 import ScrollContent from '@/components/ScrollContent'
-import SlidePanel from '@/components/SlidePanel'
-import ChatPanel from '@/components/ChatPanel'
-import SectionCard from '@/components/SectionCard'
-import SectionIndicator from '@/components/SectionIndicator'
 import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
-import SectionContent from '@/components/SectionContent'
 
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), { ssr: false })
 
-const PANEL_TITLES: Record<SectionId, string> = {
-  about:      'About',
-  experience: 'Experience',
-  projects:   'Projects',
-  blog:       'Blog',
-  personal:   'Personal',
-  contact:    'Contact',
-}
-
 export default function Home() {
   const [activeSectionIdx, setActiveSectionIdx] = useState(0)
-  const [panelOpen,        setPanelOpen]        = useState<SectionId | null>(null)
-  const [chatOpen,         setChatOpen]         = useState(false)
   const [uiVisible,        setUiVisible]        = useState(false)
 
   const activeSectionId = CONTENT_SECTIONS[activeSectionIdx]
-
-  const panelOpenRef = useRef<SectionId | null>(null)
-  useLayoutEffect(() => { panelOpenRef.current = panelOpen }, [panelOpen])
 
   const goNext = useCallback(() => {
     setActiveSectionIdx((i) => (i + 1) % CONTENT_SECTIONS.length)
@@ -45,23 +26,12 @@ export default function Home() {
     if (idx >= 0) setActiveSectionIdx(idx)
   }, [])
 
-  const handleRegionClick = useCallback((sectionId: SectionId) => {
-    goTo(sectionId)
-    setTimeout(() => setPanelOpen(sectionId), 400)
-  }, [goTo])
-
-  const handleCardOpen = useCallback((sectionId: SectionId) => {
-    setPanelOpen(sectionId)
-  }, [])
-
-  const closePanel = useCallback(() => setPanelOpen(null), [])
-
   return (
     <>
       <Suspense fallback={null}>
         <BrainCanvas
           activeSection={activeSectionId}
-          onRegionClick={handleRegionClick}
+          onRegionClick={goTo}
           onRevealDone={() => setUiVisible(true)}
         />
       </Suspense>
@@ -165,94 +135,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-
-      <SectionCard
-        activeSectionId={activeSectionId}
-        onOpen={handleCardOpen}
-      />
-
-      <SectionIndicator
-        activeSectionId={activeSectionId}
-        onDotClick={goTo}
-      />
-
-      {/* Floating chat button */}
-      <button
-        onClick={() => setChatOpen(true)}
-        style={{
-          position:        'fixed',
-          bottom:          '2.5vh',
-          left:            '5vw',
-          zIndex:          20,
-          display:         'flex',
-          alignItems:      'center',
-          gap:             8,
-          background:      'rgba(5,10,20,0.8)',
-          border:          '1px solid rgba(125,216,255,0.25)',
-          borderRadius:    24,
-          padding:         '8px 16px',
-          color:           'rgba(125,216,255,0.8)',
-          fontSize:        11,
-          fontFamily:      'var(--font-geist-mono), monospace',
-          letterSpacing:   '0.1em',
-          textTransform:   'uppercase',
-          cursor:          'pointer',
-          backdropFilter:  'blur(12px)',
-          transition:      'border-color 0.2s, color 0.2s',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = 'rgba(125,216,255,0.6)'
-          e.currentTarget.style.color = 'rgba(125,216,255,1)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = 'rgba(125,216,255,0.25)'
-          e.currentTarget.style.color = 'rgba(125,216,255,0.8)'
-        }}
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-        Chat with Joseph
-      </button>
-
-      {/* Section slide panel */}
-      <SlidePanel
-        open={panelOpen !== null}
-        onClose={closePanel}
-        title={panelOpen ? PANEL_TITLES[panelOpen] : ''}
-      >
-        {panelOpen === 'blog' ? (
-          <div>
-            <p style={{ color: 'rgba(240,244,255,0.6)', fontSize: 14, lineHeight: 1.7, margin: '0 0 12px' }}>
-              Writing on AI, ML systems, and whatever I&apos;m currently building or thinking about.
-            </p>
-            <p style={{
-              display: 'inline-block',
-              fontFamily: 'var(--font-geist-mono), monospace',
-              fontSize: 10,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color: 'rgba(125,216,255,0.5)',
-              border: '1px solid rgba(125,216,255,0.2)',
-              borderRadius: 4,
-              padding: '4px 10px',
-            }}>
-              Coming Soon
-            </p>
-          </div>
-        ) : panelOpen ? (
-          <SectionContent sectionId={panelOpen} onSectionOpen={setPanelOpen} />
-        ) : null}
-      </SlidePanel>
-
-      {/* Chat slide panel */}
-      <SlidePanel
-        open={chatOpen}
-        onClose={() => setChatOpen(false)}
-        title="Chat with Joseph"
-      >
-        <ChatPanel />
-      </SlidePanel>
 
       </div> {/* end fade-in wrapper */}
     </>
