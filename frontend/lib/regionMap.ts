@@ -29,9 +29,10 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     lobe: 'Frontal Lobe',
     description: 'The seat of identity and personality. Who I am, what drives me, and the perspective I bring.',
     hologramBullets: [
-      'CS/BBA · Waterloo × Laurier',
-      'Applied AI · ML Research · Product',
-      'Full-stack builder',
+      'CS/BBA double degree · Waterloo × Laurier',
+      'Concentrating in AI and strategic management',
+      'Full-stack builder — model to interface',
+      'Seeking Winter 2027 internships',
     ],
   },
   experience: {
@@ -39,9 +40,10 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     lobe: 'Temporal Lobe',
     description: "Memory and pattern recognition. Roles, teams, and the problems I've worked on.",
     hologramBullets: [
-      'Scotiabank — SWE Intern (2026)',
-      'ESGTree — ReAct NL-to-SQL, 90%+ accuracy',
-      'FuturIQ — ML housing prediction pipeline',
+      'Scotiabank · SWE Intern · Consumer Banking (2026)',
+      'ESGTree · ReAct NL-to-SQL · 98 tables · 90%+ eval accuracy',
+      'FuturIQ · ML housing prediction · 1000+ live GTA listings',
+      '3 internships across AI, full-stack, and product',
     ],
   },
   projects: {
@@ -49,9 +51,10 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     lobe: 'Parietal Lobe',
     description: "Spatial reasoning and problem-solving. Things I've built and shipped.",
     hologramBullets: [
-      'Scholr — AI research over 200M+ papers',
-      'Studeal — agentic AI for students',
-      'Multi-agent · MCP · RAG',
+      'Scholr · AI research assistant over 200M+ papers',
+      'Multi-agent: recursive queries + subtopic expansion',
+      'Studeal · agentic AI platform for student savings',
+      'Callable as MCP tool for Claude Code integration',
     ],
   },
   blog: {
@@ -59,7 +62,8 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     lobe: 'Occipital Lobe',
     description: "Processing and output. Writing on AI, ML, and whatever I'm thinking about.",
     hologramBullets: [
-      'Writing on AI, ML, and systems',
+      'Writing on AI systems and agentic architectures',
+      'ML research commentary and breakdowns',
       'Coming soon',
     ],
   },
@@ -68,9 +72,10 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     lobe: 'Limbic System',
     description: 'Emotion and motivation. Fitness, cooking, and life outside the terminal.',
     hologramBullets: [
-      'Training for a full marathon',
+      'Training for a full marathon + 225lb bench',
       'Cooking optimized for macros',
-      '12+ case competitions · $3k+ won',
+      '12+ case competitions · $3k+ in winnings',
+      "Dwarkesh · Lenny's · Morning Brew — always queued",
     ],
   },
   contact: {
@@ -80,7 +85,8 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     hologramBullets: [
       'josephbarbosa416@gmail.com',
       'linkedin.com/in/joseph-c-barbosa',
-      'Open to Winter 2027 internships',
+      'github.com/joeyb007',
+      'Open to Winter 2027 internships · Jan start',
     ],
   },
 }

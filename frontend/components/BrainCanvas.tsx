@@ -2,11 +2,21 @@
 
 import { useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { OrbitControls, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import BrainPointCloud from './BrainPointCloud'
-import HologramCard from './HologramCard'
 import type { SectionId } from '@/lib/regionMap'
+
+// 3D endpoints where each beam terminates — roughly in the direction of each
+// section's fixed CSS card position on screen.
+const BEAM_ENDPOINTS: Record<SectionId, [number, number, number]> = {
+  about:      [ 1.8,  0.5, 0],
+  experience: [ 1.8, -0.4, 0],
+  blog:       [-1.8,  0.5, 0],
+  projects:   [-1.8, -0.4, 0],
+  personal:   [ 0.0,  1.8, 0],
+  contact:    [ 1.0, -1.8, 0],
+}
 
 // Renders OrbitControls and auto-levels the polar angle back to PI/2 after
 // the user stops dragging. Must live inside Canvas to access useFrame.
@@ -105,10 +115,12 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
         />
 
         {centroids && activeSection && revealDone && (
-          <HologramCard
-            sectionId={activeSection}
-            position={centroids[activeSection]}
-            visible={true}
+          <Line
+            points={[centroids[activeSection], BEAM_ENDPOINTS[activeSection]]}
+            color="#7dd8ff"
+            lineWidth={1}
+            transparent
+            opacity={0.35}
           />
         )}
 
