@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Line } from '@react-three/drei'
+import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import BrainPointCloud from './BrainPointCloud'
 import HologramCard, { CARD_WORLD_POSITION } from './HologramCard'
@@ -68,6 +68,44 @@ function AutoLevelControls({ enabled }: { enabled: boolean }) {
   )
 }
 
+// Hollow cone projecting from a lobe centroid to the card position.
+// Narrow at the brain, wide at the card — like a spotlight beam.
+function ProjectionCone({
+  start,
+  end,
+}: {
+  start: [number, number, number]
+  end:   [number, number, number]
+}) {
+  const { position, quaternion, length } = useMemo(() => {
+    const s   = new THREE.Vector3(...start)
+    const e   = new THREE.Vector3(...end)
+    const dir = new THREE.Vector3().subVectors(e, s)
+    const len = dir.length()
+    const mid = new THREE.Vector3().addVectors(s, dir.clone().multiplyScalar(0.5))
+    const q   = new THREE.Quaternion().setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      dir.normalize(),
+    )
+    return { position: mid, quaternion: q, length: len }
+  }, [start, end])
+
+  return (
+    <mesh position={position} quaternion={quaternion}>
+      {/* radiusTop = wide end (card), radiusBottom = narrow end (lobe), open cone */}
+      <cylinderGeometry args={[0.18, 0.01, length, 16, 1, true]} />
+      <meshBasicMaterial
+        color="#00dcff"
+        transparent
+        opacity={0.14}
+        side={THREE.DoubleSide}
+        blending={THREE.AdditiveBlending}
+        depthWrite={false}
+      />
+    </mesh>
+  )
+}
+
 interface Props {
   activeSection: SectionId | null
   onRegionClick: (sectionId: SectionId) => void
@@ -106,12 +144,9 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
 
         {centroids && activeSection && revealDone && (
           <>
-            <Line
-              points={[centroids[activeSection], CARD_WORLD_POSITION]}
-              color="#00dcff"
-              lineWidth={1}
-              transparent
-              opacity={0.4}
+            <ProjectionCone
+              start={centroids[activeSection]}
+              end={CARD_WORLD_POSITION}
             />
             <HologramCard sectionId={activeSection} visible={true} />
           </>
