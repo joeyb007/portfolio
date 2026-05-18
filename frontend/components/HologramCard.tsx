@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, forwardRef } from 'react'
+import { useState, useEffect, useRef, forwardRef } from 'react'
 import { REGION_CONFIGS, type SectionId } from '@/lib/regionMap'
 
 interface Props {
@@ -36,31 +36,44 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
   { sectionId, visible },
   ref,
 ) {
-  const [displayed,      setDisplayed]      = useState(sectionId)
-  const [contentOpacity, setContentOpacity] = useState(1)
+  const [displayed,  setDisplayed]  = useState(sectionId)
+  const [flickering, setFlickering] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (displayed === sectionId) return
-    setContentOpacity(0)
-    const t = setTimeout(() => { setDisplayed(sectionId); setContentOpacity(1) }, 180)
-    return () => clearTimeout(t)
+    // Signal-loss flicker, then materialize new content
+    setFlickering(true)
+    timerRef.current = setTimeout(() => {
+      setDisplayed(sectionId)
+      setFlickering(false)
+    }, 160)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
   }, [sectionId, displayed])
 
   const cfg = REGION_CONFIGS[displayed]
 
   return (
+    <>
+      <style>{`
+        @keyframes holoIn {
+          0%   { opacity: 0;   transform: translateY(6px) scaleY(0.97); filter: brightness(2.5); }
+          60%  { opacity: 1;   transform: translateY(1px) scaleY(1);    filter: brightness(1.3); }
+          100% { opacity: 1;   transform: translateY(0)   scaleY(1);    filter: brightness(1);   }
+        }
+      `}</style>
     <div
       ref={ref}
       style={{
-        position:             'fixed',
-        right:                '5vw',
-        top:                  '50%',
-        transform:            'translateY(-50%) perspective(400px) rotateY(-4deg)',
-        zIndex:               15,
-        width:                252,
-        opacity:              visible ? 1 : 0,
-        transition:           'opacity 0.4s ease',
-        pointerEvents:        'none',
+        position:      'fixed',
+        right:         '5vw',
+        top:           '50%',
+        transform:     'translateY(-50%) perspective(400px) rotateY(-4deg)',
+        zIndex:        15,
+        width:         252,
+        opacity:       flickering ? 0.15 : (visible ? 1 : 0),
+        transition:    'opacity 0.12s ease',
+        pointerEvents: 'none',
       }}
     >
       <div style={{
@@ -94,7 +107,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
         <Corner bottom={5} left={5} />
         <Corner bottom={5} right={5} />
 
-        <div style={{ opacity: contentOpacity, transition: 'opacity 0.18s ease' }}>
+        <div key={displayed} style={{ animation: 'holoIn 0.28s ease' }}>
           <p style={{ ...mono, color: 'rgba(0,220,255,0.7)', margin: '0 0 3px', textShadow: '0 0 8px rgba(0,200,255,0.5)' }}>
             ◆ {cfg.lobe}
           </p>
@@ -122,6 +135,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
         </div>
       </div>
     </div>
+    </>
   )
 })
 
