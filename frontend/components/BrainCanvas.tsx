@@ -1,12 +1,35 @@
 'use client'
 
-import { useRef, useState, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { useRef, useState, useMemo, useEffect } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import BrainPointCloud from './BrainPointCloud'
-import HologramCard, { CARD_WORLD_POSITION } from './HologramCard'
 import type { SectionId } from '@/lib/regionMap'
+
+// Projects the active lobe centroid to screen coordinates every frame
+// and fires onScreenPos so the parent can draw the SVG pyramid overlay.
+function LobeTracker({
+  centroid,
+  onScreenPos,
+}: {
+  centroid:    [number, number, number]
+  onScreenPos: (x: number, y: number) => void
+}) {
+  const { camera, size } = useThree()
+  const vec   = useMemo(() => new THREE.Vector3(), [])
+  const cbRef = useRef(onScreenPos)
+  useEffect(() => { cbRef.current = onScreenPos })
+
+  useFrame(() => {
+    vec.set(...centroid).project(camera)
+    const x = (vec.x + 1) / 2 * size.width
+    const y = (1 - vec.y) / 2 * size.height
+    cbRef.current(x, y)
+  })
+
+  return null
+}
 
 // Renders OrbitControls and auto-levels the polar angle back to PI/2 after
 // the user stops dragging. Must live inside Canvas to access useFrame.
@@ -68,52 +91,15 @@ function AutoLevelControls({ enabled }: { enabled: boolean }) {
   )
 }
 
-// Hollow cone projecting from a lobe centroid to the card position.
-// Narrow at the brain, wide at the card — like a spotlight beam.
-function ProjectionCone({
-  start,
-  end,
-}: {
-  start: [number, number, number]
-  end:   [number, number, number]
-}) {
-  const { position, quaternion, length } = useMemo(() => {
-    const s   = new THREE.Vector3(...start)
-    const e   = new THREE.Vector3(...end)
-    const dir = new THREE.Vector3().subVectors(e, s)
-    const len = dir.length()
-    const mid = new THREE.Vector3().addVectors(s, dir.clone().multiplyScalar(0.5))
-    const q   = new THREE.Quaternion().setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0),
-      dir.normalize(),
-    )
-    return { position: mid, quaternion: q, length: len }
-  }, [start, end])
-
-  return (
-    <mesh position={position} quaternion={quaternion}>
-      {/* radiusTop = wide end (card), radiusBottom = narrow end (lobe), open cone */}
-      <cylinderGeometry args={[0.18, 0.01, length, 16, 1, true]} />
-      <meshBasicMaterial
-        color="#00dcff"
-        transparent
-        opacity={0.14}
-        side={THREE.DoubleSide}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-      />
-    </mesh>
-  )
-}
-
 interface Props {
-  activeSection: SectionId | null
-  onRegionClick: (sectionId: SectionId) => void
-  onRevealDone?: () => void
-  isMobile:      boolean
+  activeSection:    SectionId | null
+  onRegionClick:    (sectionId: SectionId) => void
+  onRevealDone?:    () => void
+  isMobile:         boolean
+  onLobeScreenPos?: (x: number, y: number) => void
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone, isMobile }: Props) {
+export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone, isMobile, onLobeScreenPos }: Props) {
   const [revealDone, setRevealDone] = useState(false)
   const [centroids,  setCentroids]  = useState<Record<SectionId, [number, number, number]> | null>(null)
 
@@ -142,14 +128,11 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
           onCentroidsReady={setCentroids}
         />
 
-        {centroids && activeSection && revealDone && (
-          <>
-            <ProjectionCone
-              start={centroids[activeSection]}
-              end={CARD_WORLD_POSITION}
-            />
-            <HologramCard sectionId={activeSection} visible={true} />
-          </>
+        {centroids && activeSection && revealDone && onLobeScreenPos && (
+          <LobeTracker
+            centroid={centroids[activeSection]}
+            onScreenPos={onLobeScreenPos}
+          />
         )}
 
         <AutoLevelControls enabled={revealDone && !isMobile} />
