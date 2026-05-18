@@ -5,11 +5,8 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import BrainPointCloud from './BrainPointCloud'
+import HologramCard, { CARD_WORLD_POSITION } from './HologramCard'
 import type { SectionId } from '@/lib/regionMap'
-
-// Single beam endpoint — right side of scene, vertically centered,
-// corresponding to the HologramCard's fixed CSS position at right: 5vw, top: 50%.
-const BEAM_ENDPOINT: [number, number, number] = [1.6, 0, 0]
 
 // Renders OrbitControls and auto-levels the polar angle back to PI/2 after
 // the user stops dragging. Must live inside Canvas to access useFrame.
@@ -108,13 +105,16 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
         />
 
         {centroids && activeSection && revealDone && (
-          <Line
-            points={[centroids[activeSection], BEAM_ENDPOINT]}
-            color="#7dd8ff"
-            lineWidth={1}
-            transparent
-            opacity={0.35}
-          />
+          <>
+            <Line
+              points={[centroids[activeSection], CARD_WORLD_POSITION]}
+              color="#00dcff"
+              lineWidth={1}
+              transparent
+              opacity={0.4}
+            />
+            <HologramCard sectionId={activeSection} visible={true} />
+          </>
         )}
 
         <AutoLevelControls enabled={revealDone && !isMobile} />

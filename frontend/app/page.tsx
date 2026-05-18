@@ -6,7 +6,6 @@ import ScrollContent from '@/components/ScrollContent'
 import { CONTENT_SECTIONS, type SectionId, REGION_CONFIGS } from '@/lib/regionMap'
 import ChatBar from '@/components/ChatBar'
 import ChatThread, { type ChatMessage } from '@/components/ChatThread'
-import HologramCard from '@/components/HologramCard'
 
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), { ssr: false })
 
@@ -199,11 +198,7 @@ export default function Home() {
         </div>
       )}
 
-      {!isMobile && activeSectionId && (
-        <HologramCard sectionId={activeSectionId} visible={true} />
-      )}
-
-      <ChatThread messages={messages} loading={chatLoading} isMobile={isMobile} />
+<ChatThread messages={messages} loading={chatLoading} isMobile={isMobile} />
       <ChatBar    onSend={handleSend} loading={chatLoading} />
 
       </div> {/* end fade-in wrapper */}
