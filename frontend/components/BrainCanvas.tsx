@@ -7,16 +7,9 @@ import * as THREE from 'three'
 import BrainPointCloud from './BrainPointCloud'
 import type { SectionId } from '@/lib/regionMap'
 
-// 3D endpoints where each beam terminates — roughly in the direction of each
-// section's fixed CSS card position on screen.
-const BEAM_ENDPOINTS: Record<SectionId, [number, number, number]> = {
-  about:      [ 1.8,  0.5, 0],
-  experience: [ 1.8, -0.4, 0],
-  blog:       [-1.8,  0.5, 0],
-  projects:   [-1.8, -0.4, 0],
-  personal:   [ 0.0,  1.8, 0],
-  contact:    [ 1.0, -1.8, 0],
-}
+// Single beam endpoint — right side of scene, vertically centered,
+// corresponding to the HologramCard's fixed CSS position at right: 5vw, top: 50%.
+const BEAM_ENDPOINT: [number, number, number] = [1.6, 0, 0]
 
 // Renders OrbitControls and auto-levels the polar angle back to PI/2 after
 // the user stops dragging. Must live inside Canvas to access useFrame.
@@ -100,7 +93,7 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
       }}
     >
       <Canvas
-        camera={{ position: [0, 0.3, 4.2], fov: 35 }}
+        camera={{ position: [0, 0.3, 5.5], fov: 35 }}
         gl={{ antialias: true, alpha: true }}
         dpr={isMobile ? [1, 1.5] : [1, 2]}
       >
@@ -116,7 +109,7 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
 
         {centroids && activeSection && revealDone && (
           <Line
-            points={[centroids[activeSection], BEAM_ENDPOINTS[activeSection]]}
+            points={[centroids[activeSection], BEAM_ENDPOINT]}
             color="#7dd8ff"
             lineWidth={1}
             transparent
