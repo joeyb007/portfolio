@@ -47,12 +47,53 @@ export default function Home() {
     const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', content: text }
     setMessages(prev => [...prev, userMsg])
     setChatLoading(true)
-    await new Promise(r => setTimeout(r, 600))
-    setMessages(prev => [...prev, {
-      id: crypto.randomUUID(), role: 'assistant', content: 'Full chat coming in Task 11.',
-    }])
-    setChatLoading(false)
-  }, [])
+
+    try {
+      // Build history in the format the backend expects
+      const history = messages.map(m => ({ role: m.role, content: m.content }))
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message: text, history, voice: true }),
+      })
+
+      if (res.status === 400) {
+        // Input guardrail blocked the message
+        setMessages(prev => [...prev, {
+          id:      crypto.randomUUID(),
+          role:    'assistant',
+          content: "That's a bit outside what I can speak to. Ask me about Joseph's work, projects, or background.",
+          blocked: true,
+        }])
+        return
+      }
+
+      if (!res.ok) throw new Error(`Backend error ${res.status}`)
+
+      const data = await res.json()
+
+      // Navigate brain to the relevant section if one was returned
+      if (data.sectionId) goTo(data.sectionId)
+
+      setMessages(prev => [...prev, {
+        id:        crypto.randomUUID(),
+        role:      'assistant',
+        content:   data.reply,
+        sectionId: data.sectionId ?? undefined,
+        audio:     data.audio   ?? undefined,
+      }])
+    } catch (err) {
+      console.error('Chat error:', err)
+      setMessages(prev => [...prev, {
+        id:      crypto.randomUUID(),
+        role:    'assistant',
+        content: "Something went wrong on my end. Try again in a moment.",
+      }])
+    } finally {
+      setChatLoading(false)
+    }
+  }, [messages, goTo])
 
   return (
     <>

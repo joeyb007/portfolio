@@ -7,6 +7,8 @@ export interface ChatMessage {
   role:       'user' | 'assistant'
   content:    string
   sectionId?: string
+  audio?:     string   // base64 mp3 from TTS
+  blocked?:   boolean  // true when input guardrail blocked the message
 }
 
 interface Props {
