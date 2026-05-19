@@ -19,7 +19,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "https://josephbarbosa.com",        # your domain — update once purchased
+        "https://www.josephbarbosa.com",
+        os.environ.get("FRONTEND_URL", ""), # set in Railway if you need Vercel preview URLs
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
