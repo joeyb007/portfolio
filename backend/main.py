@@ -23,9 +23,9 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:3002",
-        "https://josephbarbosa.com",        # your domain — update once purchased
+        "https://josephbarbosa.com",
         "https://www.josephbarbosa.com",
-        os.environ.get("FRONTEND_URL", ""), # set in Railway if you need Vercel preview URLs
+        "https://portfolio-mkj82vw6g-josephs-projects-7b9fb32b.vercel.app",
     ],
     allow_methods=["*"],
     allow_headers=["*"],
