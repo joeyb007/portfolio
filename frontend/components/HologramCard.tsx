@@ -168,6 +168,10 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           0%, 100% { transform: translateY(-50%) perspective(400px) rotateY(-4deg) translateY(0px); }
           50%       { transform: translateY(-50%) perspective(400px) rotateY(-4deg) translateY(-16px); }
         }
+        @keyframes holoFloatMobile {
+          0%, 100% { transform: perspective(400px) rotateY(-4deg) translateY(0px); }
+          50%       { transform: perspective(400px) rotateY(-4deg) translateY(-10px); }
+        }
         @keyframes scanSweep {
           0%   { transform: translateY(320px); opacity: 0; }
           4%   { opacity: 1; }
@@ -202,7 +206,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
             top:   '50%',
             width: 252,
           }),
-          animation:     'holoFloat 5s ease-in-out infinite',
+          animation:     isMobile ? 'holoFloatMobile 5s ease-in-out infinite' : 'holoFloat 5s ease-in-out infinite',
           zIndex:        15,
           height:        isMobile ? 230 : 310,
           opacity:       visible ? 1 : 0,
