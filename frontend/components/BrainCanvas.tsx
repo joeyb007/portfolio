@@ -108,9 +108,12 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
     <div
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: isMobile ? '45vh' : 0,
         zIndex: 0,
-        opacity: isMobile ? 0.3 : 1,
+        opacity: isMobile ? 0.45 : 1,
         pointerEvents: isMobile ? 'none' : 'auto',
       }}
     >

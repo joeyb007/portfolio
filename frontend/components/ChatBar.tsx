@@ -7,9 +7,10 @@ interface Props {
   loading:       boolean
   voiceEnabled:  boolean
   onVoiceToggle: () => void
+  isMobile?:     boolean
 }
 
-export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle }: Props) {
+export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, isMobile }: Props) {
   const inputRef    = useRef<HTMLInputElement>(null)
   const [recording, setRecording] = useState(false)
   const recogRef    = useRef<any>(null)
@@ -139,8 +140,8 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle }
         }}
       />
 
-      {/* Mic button — only shown when SpeechRecognition is available */}
-      {hasRecog && (
+      {/* Mic button — desktop only, not available on iOS Safari */}
+      {hasRecog && !isMobile && (
         <button
           onClick={toggleMic}
           title={recording ? 'Stop recording' : 'Speak'}

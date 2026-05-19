@@ -17,6 +17,7 @@ function parseBold(text: string): React.ReactNode {
 interface Props {
   sectionId: SectionId
   visible:   boolean
+  isMobile?: boolean
 }
 
 const mono: React.CSSProperties = {
@@ -43,7 +44,7 @@ function Corner({ top, right, bottom, left }: { top?: number; right?: number; bo
 }
 
 const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
-  { sectionId, visible },
+  { sectionId, visible, isMobile },
   ref,
 ) {
   const [displayed,    setDisplayed]   = useState(sectionId)
@@ -192,12 +193,18 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
         ref={ref}
         style={{
           position:      'fixed',
-          right:         '5vw',
-          top:           '50%',
+          ...(isMobile ? {
+            bottom:  '58vh',
+            right:   '4vw',
+            width:   'min(220px, 88vw)',
+          } : {
+            right:   '5vw',
+            top:     '50%',
+            width:   252,
+          }),
           animation:     'holoFloat 5s ease-in-out infinite',
           zIndex:        15,
-          width:         252,
-          height:        310,
+          height:        isMobile ? 260 : 310,
           opacity:       visible ? 1 : 0,
           transition:    'opacity 0.4s ease',
           pointerEvents: 'none',

@@ -212,8 +212,8 @@ export default function Home() {
         </div>
       </div>
 
-      {!isMobile && activeSectionId && (
-        <HologramCard ref={setCardEl} sectionId={activeSectionId} visible={true} />
+      {activeSectionId && (
+        <HologramCard ref={setCardEl} sectionId={activeSectionId} visible={true} isMobile={isMobile} />
       )}
 
       {!isMobile && lobeScreenPos && activeSectionId && (
@@ -231,6 +231,7 @@ export default function Home() {
           loading={chatLoading}
           voiceEnabled={voiceEnabled}
           onVoiceToggle={() => setVoiceEnabled(v => !v)}
+          isMobile={isMobile}
         />
 
       </div> {/* end fade-in wrapper */}
