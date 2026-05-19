@@ -24,3 +24,6 @@ backend/__pycache__/
 # misc
 .DS_Store
 *.log
+.playwright-mcp/
+docs/
+backend/.env
