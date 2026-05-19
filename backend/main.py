@@ -3,6 +3,7 @@ import re
 import json
 import base64
 import pathlib
+import urllib.request
 from typing import Optional, Literal
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -30,14 +31,47 @@ SECTIONS = ["about", "experience", "projects", "blog", "personal", "contact"]
 
 # ── Knowledge base ────────────────────────────────────────────────────────────
 # Drop any .md file into backend/knowledge/ and restart — it gets injected.
+# GitHub READMEs are fetched automatically on startup for each repo listed below.
+
+GITHUB_REPOS = [
+    ("joeyb007", "Scholr"),
+    ("joeyb007", "pantry-pal"),
+    ("joeyb007", "Studeal"),
+    ("joeyb007", "from-scratch"),
+]
+
+def fetch_github_readme(owner: str, repo: str) -> str | None:
+    url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/README.md"
+    try:
+        with urllib.request.urlopen(url, timeout=5) as r:
+            return r.read().decode("utf-8")
+    except Exception:
+        # Try master branch as fallback
+        try:
+            url = f"https://raw.githubusercontent.com/{owner}/{repo}/master/README.md"
+            with urllib.request.urlopen(url, timeout=5) as r:
+                return r.read().decode("utf-8")
+        except Exception:
+            return None
 
 def load_knowledge() -> str:
-    knowledge_dir = pathlib.Path(__file__).parent / "knowledge"
-    if not knowledge_dir.exists():
-        return ""
     parts = []
-    for md_file in sorted(knowledge_dir.rglob("*.md")):
-        parts.append(f"# {md_file.stem}\n\n{md_file.read_text()}")
+
+    # Local .md files
+    knowledge_dir = pathlib.Path(__file__).parent / "knowledge"
+    if knowledge_dir.exists():
+        for md_file in sorted(knowledge_dir.rglob("*.md")):
+            parts.append(f"## {md_file.stem}\n\n{md_file.read_text()}")
+
+    # GitHub READMEs — fetched fresh on each startup
+    for owner, repo in GITHUB_REPOS:
+        readme = fetch_github_readme(owner, repo)
+        if readme:
+            parts.append(f"## GitHub README: {repo}\n\n{readme}")
+            print(f"Loaded README for {owner}/{repo}")
+        else:
+            print(f"Could not fetch README for {owner}/{repo} — skipping")
+
     return "\n\n---\n\n".join(parts)
 
 KNOWLEDGE = load_knowledge()
