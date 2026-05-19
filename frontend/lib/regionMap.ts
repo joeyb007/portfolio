@@ -47,7 +47,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     sectionId: 'about', label: 'About', color: '#7dd8ff',
     lobe:         'Frontal Lobe',
     lobeFunction: 'The seat of identity and personality.',
-    sectionDesc:  'Who I am, what drives me, and the perspective I bring.',
+    sectionDesc:  'Who I am, what drives me, and my perspective.',
     hologramBullets: [
       {
         category: 'currently',
