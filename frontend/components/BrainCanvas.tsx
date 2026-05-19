@@ -96,10 +96,11 @@ interface Props {
   onRegionClick:    (sectionId: SectionId) => void
   onRevealDone?:    () => void
   isMobile:         boolean
+  speaking?:        boolean
   onLobeScreenPos?: (x: number, y: number) => void
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone, isMobile, onLobeScreenPos }: Props) {
+export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone, isMobile, speaking, onLobeScreenPos }: Props) {
   const [revealDone, setRevealDone] = useState(false)
   const [centroids,  setCentroids]  = useState<Record<SectionId, [number, number, number]> | null>(null)
 
@@ -124,6 +125,7 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
           activeSection={activeSection}
           onRegionClick={onRegionClick}
           isMobile={isMobile}
+          speaking={speaking}
           onRevealDone={() => { setRevealDone(true); onRevealDone?.() }}
           onCentroidsReady={setCentroids}
         />

@@ -125,81 +125,157 @@ function AudioPlayer({ audio, autoPlay, onSpeaking }: AudioPlayerProps) {
   )
 }
 
+// ── Typewriter reveal ─────────────────────────────────────────────────────────
+
+function TypewriterText({ text, isNew }: { text: string; isNew: boolean }) {
+  const [displayed, setDisplayed] = useState(isNew ? '' : text)
+
+  useEffect(() => {
+    if (!isNew) return   // initial state already set correctly for non-new messages
+    let i = 0
+    const id = setInterval(() => {
+      i++
+      setDisplayed(text.slice(0, i))
+      if (i >= text.length) clearInterval(id)
+    }, 18)
+    return () => clearInterval(id)
+  }, [text, isNew])
+
+  return <>{displayed}</>
+}
+
 // ── Chat thread ───────────────────────────────────────────────────────────────
 
 export default function ChatThread({ messages, loading, isMobile, onSpeaking }: Props) {
   const bottomRef      = useRef<HTMLDivElement>(null)
   const handleSpeaking = useCallback((s: boolean) => onSpeaking?.(s), [onSpeaking])
+  const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+  // Mark new assistant messages as seen after first render
+  useEffect(() => {
+    const newIds = messages
+      .filter(m => m.role === 'assistant' && !seenIds.has(m.id))
+      .map(m => m.id)
+    if (newIds.length > 0) {
+      setTimeout(() => {
+        setSeenIds(prev => new Set([...prev, ...newIds]))
+      }, 2000) // keep "new" state for duration of typewriter animation
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages])
+
   if (messages.length === 0 && !loading) return null
 
-  // ID of the most recent assistant message with audio — that one gets autoPlay
   const latestAudioId = [...messages]
     .reverse()
     .find(m => m.role === 'assistant' && m.audio)?.id ?? ''
 
-  return (
-    <div style={{
-      position:      'fixed',
-      bottom:        isMobile ? 76 : 72,
-      left:          isMobile ? '2vw' : '5vw',
-      zIndex:        39,
-      width:         isMobile ? '96vw' : 'min(420px, 90vw)',
-      maxHeight:     isMobile ? '35vh' : '40vh',
-      overflowY:     'auto',
-      display:       'flex',
-      flexDirection: 'column',
-      gap:           10,
-      padding:       '12px 0',
-    }}>
-      {messages.map((m) => (
-        <div
-          key={m.id}
-          style={{
-            alignSelf:      m.role === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth:       '85%',
-            padding:        '10px 14px',
-            borderRadius:   m.role === 'user' ? '16px 16px 4px 16px' : '4px 16px 16px 16px',
-            background:     m.role === 'user'
-              ? 'rgba(125,216,255,0.12)'
-              : m.blocked ? 'rgba(255,100,100,0.06)' : 'rgba(5,10,20,0.75)',
-            border:         m.role === 'user'
-              ? '1px solid rgba(125,216,255,0.3)'
-              : m.blocked ? '1px solid rgba(255,100,100,0.15)' : '1px solid rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(12px)',
-            color:          m.role === 'user' ? 'rgba(125,216,255,0.95)' : 'rgba(240,244,255,0.8)',
-            fontSize:       13,
-            lineHeight:     1.6,
-          }}
-        >
-          {m.audio && (
-            <AudioPlayer
-              audio={m.audio}
-              autoPlay={m.id === latestAudioId}
-              onSpeaking={handleSpeaking}
-            />
-          )}
-          {m.content}
-        </div>
-      ))}
+  const latestAssistantId = [...messages]
+    .reverse()
+    .find(m => m.role === 'assistant')?.id ?? ''
 
-      {loading && (
-        <div style={{
-          alignSelf:     'flex-start',
-          color:         'rgba(125,216,255,0.5)',
-          fontSize:      11,
-          fontFamily:    'var(--font-geist-mono), monospace',
-          letterSpacing: '0.1em',
-          padding:       '4px 0',
-        }}>
-          thinking...
-        </div>
-      )}
-      <div ref={bottomRef} />
-    </div>
+  return (
+    <>
+      <style>{`
+        @keyframes scanLine {
+          0%   { transform: scaleX(0); opacity: 1; }
+          70%  { transform: scaleX(1); opacity: 1; }
+          100% { transform: scaleX(1); opacity: 0; }
+        }
+        @keyframes thinkPulse {
+          0%, 100% { opacity: 0.3; }
+          50%       { opacity: 1;   }
+        }
+      `}</style>
+      <div style={{
+        position:      'fixed',
+        bottom:        isMobile ? 76 : 72,
+        left:          isMobile ? '2vw' : '5vw',
+        zIndex:        39,
+        width:         isMobile ? '96vw' : 'min(420px, 90vw)',
+        maxHeight:     isMobile ? '35vh' : '40vh',
+        overflowY:     'auto',
+        display:       'flex',
+        flexDirection: 'column',
+        gap:           10,
+        padding:       '12px 0',
+      }}>
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            style={{
+              alignSelf:      m.role === 'user' ? 'flex-end' : 'flex-start',
+              maxWidth:       '85%',
+              padding:        '10px 14px',
+              borderRadius:   m.role === 'user' ? '16px 16px 4px 16px' : '4px 16px 16px 16px',
+              background:     m.role === 'user'
+                ? 'rgba(125,216,255,0.12)'
+                : m.blocked ? 'rgba(255,100,100,0.06)' : 'rgba(5,10,20,0.75)',
+              border:         m.role === 'user'
+                ? '1px solid rgba(125,216,255,0.3)'
+                : m.blocked ? '1px solid rgba(255,100,100,0.15)' : '1px solid rgba(255,255,255,0.06)',
+              backdropFilter: 'blur(12px)',
+              color:          m.role === 'user' ? 'rgba(125,216,255,0.95)' : 'rgba(240,244,255,0.8)',
+              fontSize:       13,
+              lineHeight:     1.6,
+              position:       'relative',
+            }}
+          >
+            {/* Scan line on new assistant messages */}
+            {m.role === 'assistant' && m.id === latestAssistantId && !seenIds.has(m.id) && (
+              <div style={{
+                position:        'absolute',
+                top: 0, left: 0, right: 0,
+                height:          '100%',
+                background:      'linear-gradient(to right, transparent, rgba(0,220,255,0.08), transparent)',
+                transformOrigin: 'left',
+                animation:       'scanLine 0.6s ease forwards',
+                pointerEvents:   'none',
+                zIndex:          1,
+              }} />
+            )}
+            {m.audio && (
+              <AudioPlayer
+                audio={m.audio}
+                autoPlay={m.id === latestAudioId}
+                onSpeaking={handleSpeaking}
+              />
+            )}
+            {m.role === 'assistant' && m.id === latestAssistantId && !seenIds.has(m.id)
+              ? <TypewriterText text={m.content} isNew={true} />
+              : m.content
+            }
+          </div>
+        ))}
+
+        {loading && (
+          <div style={{
+            alignSelf:   'flex-start',
+            display:     'flex',
+            alignItems:  'center',
+            gap:         6,
+            padding:     '8px 12px',
+            background:  'rgba(5,10,20,0.6)',
+            border:      '1px solid rgba(0,220,255,0.12)',
+            backdropFilter: 'blur(12px)',
+            borderRadius: '4px 16px 16px 16px',
+          }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                width:       6, height: 6,
+                borderRadius:'50%',
+                background:  'rgba(0,220,255,0.7)',
+                animation:   `thinkPulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+              }} />
+            ))}
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+    </>
   )
 }

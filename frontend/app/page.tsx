@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useState, useCallback, useEffect, useRef, Suspense } from 'react'
+import { useState, useCallback, useEffect, Suspense } from 'react'
 import ScrollContent from '@/components/ScrollContent'
 import { CONTENT_SECTIONS, type SectionId } from '@/lib/regionMap'
 import ChatBar from '@/components/ChatBar'
@@ -14,11 +14,13 @@ const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), { ssr: fal
 export default function Home() {
   const [activeSectionIdx, setActiveSectionIdx] = useState(0)
   const [uiVisible,        setUiVisible]        = useState(false)
-  const [messages,    setMessages]    = useState<ChatMessage[]>([])
-  const [chatLoading, setChatLoading] = useState(false)
-  const [isMobile,    setIsMobile]    = useState(false)
+  const [messages,      setMessages]      = useState<ChatMessage[]>([])
+  const [chatLoading,   setChatLoading]   = useState(false)
+  const [isMobile,      setIsMobile]      = useState(false)
   const [lobeScreenPos, setLobeScreenPos] = useState<[number, number] | null>(null)
-  const cardRef = useRef<HTMLDivElement>(null)
+  const [voiceEnabled,  setVoiceEnabled]  = useState(true)
+  const [speaking,      setSpeaking]      = useState(false)
+  const [cardEl, setCardEl] = useState<HTMLDivElement | null>(null)
 
   const activeSectionId = CONTENT_SECTIONS[activeSectionIdx]
 
@@ -55,7 +57,7 @@ export default function Home() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ message: text, history, voice: true }),
+        body:    JSON.stringify({ message: text, history, voice: voiceEnabled }),
       })
 
       if (res.status === 400) {
@@ -93,7 +95,7 @@ export default function Home() {
     } finally {
       setChatLoading(false)
     }
-  }, [messages, goTo])
+  }, [messages, goTo, voiceEnabled])
 
   return (
     <>
@@ -103,6 +105,7 @@ export default function Home() {
           onRegionClick={goTo}
           onRevealDone={() => setUiVisible(true)}
           isMobile={isMobile}
+          speaking={speaking}
           onLobeScreenPos={(x, y) => setLobeScreenPos([x, y])}
         />
       </Suspense>
@@ -116,15 +119,17 @@ export default function Home() {
         pointerEvents: uiVisible ? 'auto' : 'none',
       }}>
 
-      {/* Hero */}
+      {/* Hero — fades out once a conversation starts */}
       <div
         style={{
           position:      'fixed',
           left:          '5vw',
           bottom:        '10vh',
           zIndex:        10,
-          pointerEvents: 'none',
           maxWidth:      360,
+          opacity:       messages.length > 0 ? 0 : 1,
+          transition:    'opacity 0.6s ease',
+          pointerEvents: messages.length > 0 ? 'none' : 'auto',
         }}
       >
         <p style={{
@@ -208,15 +213,25 @@ export default function Home() {
       </div>
 
       {activeSectionId && (
-        <HologramCard ref={cardRef} sectionId={activeSectionId} visible={true} />
+        <HologramCard ref={setCardEl} sectionId={activeSectionId} visible={true} />
       )}
 
       {!isMobile && lobeScreenPos && activeSectionId && (
-        <PyramidOverlay lobe={lobeScreenPos} cardEl={cardRef.current} />
+        <PyramidOverlay lobe={lobeScreenPos} cardEl={cardEl} />
       )}
 
-<ChatThread messages={messages} loading={chatLoading} isMobile={isMobile} />
-      <ChatBar    onSend={handleSend} loading={chatLoading} />
+<ChatThread
+          messages={messages}
+          loading={chatLoading}
+          isMobile={isMobile}
+          onSpeaking={setSpeaking}
+        />
+        <ChatBar
+          onSend={handleSend}
+          loading={chatLoading}
+          voiceEnabled={voiceEnabled}
+          onVoiceToggle={() => setVoiceEnabled(v => !v)}
+        />
 
       </div> {/* end fade-in wrapper */}
     </>

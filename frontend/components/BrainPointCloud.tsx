@@ -146,6 +146,7 @@ interface Props {
   activeSection:    SectionId | null
   onRegionClick:    (sectionId: SectionId) => void
   isMobile:         boolean
+  speaking?:        boolean
   onRevealDone:     () => void
   onCentroidsReady: (centroids: Record<SectionId, [number, number, number]>) => void
 }
@@ -154,6 +155,7 @@ export default function BrainPointCloud({
   activeSection,
   onRegionClick,
   isMobile,
+  speaking = false,
   onRevealDone,
   onCentroidsReady,
 }: Props) {
@@ -276,7 +278,11 @@ export default function BrainPointCloud({
       base.color.g += (targetDim - base.color.g) * Math.min(1, delta * speed)
       base.color.b += (targetDim - base.color.b) * Math.min(1, delta * speed)
 
-      glow.opacity += ((isActive ? 0.6 : 0) - glow.opacity) * Math.min(1, delta * speed)
+      // While speaking, pulse the active lobe glow between 0.6 and 1.1
+      const speakingGlow = isActive && speaking
+        ? 0.75 + Math.sin(state.clock.elapsedTime * 6) * 0.35
+        : isActive ? 0.6 : 0
+      glow.opacity += (speakingGlow - glow.opacity) * Math.min(1, delta * speed)
     })
   })
 

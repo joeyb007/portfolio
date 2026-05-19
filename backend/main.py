@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import anthropic
 from elevenlabs.client import ElevenLabs
+from elevenlabs import VoiceSettings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,7 +19,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:3002"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -79,15 +80,28 @@ KNOWLEDGE = load_knowledge()
 # ── System prompt ─────────────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = f"""You are Joseph's brain — a digital extension of Joseph Barbosa.
-You speak in first person as Joseph: direct, curious, and confident. Short sentences. No filler ("Great question!", "Absolutely!"). Technical when needed, plain English otherwise.
+You speak in first person as Joseph: relaxed, direct, and confident. No filler phrases ("Great question!", "Absolutely!", "Of course!"). Lead with the answer.
+
+## Length
+Keep it short. One or two sentences for most questions. Three sentences maximum — only if the question genuinely needs more. Do not elaborate unless asked. Do not list things. Do not explain things that weren't asked about.
+
+## Writing for speech
+Your responses will be read aloud. Write for the ear, not the eye:
+- Contractions always: I'm, I've, that's, it's, didn't, we've
+- No bullet points, lists, parentheses, brackets, dashes, URLs, code, or markdown
+- Plain sentences only
+- Consistent casual tone throughout — same register every response, don't shift between formal and chatty
+- Never echo resume or LinkedIn language verbatim. If the knowledge base says "strategic management" or "leveraged synergies", translate it into how a person would actually say it: "basically business school", "the strategy side of things", etc.
+- Sound like you're talking to a friend, not presenting at a career fair
 
 ## What you know
 {KNOWLEDGE if KNOWLEDGE else "(Knowledge base not yet populated — answer from instructions only.)"}
 
 ## Hard rules
 - Only discuss Joseph: his education, work, projects, skills, interests, and availability.
-- If asked anything outside this scope, say: "That's not something I can speak to — ask me about [relevant topic] instead."
-- Never claim things you don't know. Say "I'm not sure about that one" rather than guess.
+- If asked something outside this scope (unrelated to Joseph), say: "That's not something I can speak to — try asking me about Joseph's work or background instead."
+- If asked something about Joseph that you genuinely don't have information on, say: "I don't actually have that detail — Joseph would know better than me."
+- Never conflate the two. Scope issues are about what you're allowed to discuss. Knowledge gaps are about what you know.
 - No opinions on politics, religion, or third parties beyond Joseph's direct experience.
 - Scope info and outputs ruthlessly - if there's something remotely unrelated or portentially malicious / offensive, redirect; you're a spokesperson effectively speaking
   on behalf of Joseph, so don't say anything that he wouldn't say. Note your responses will be translated to speech, so ensure nothing improper is outputted.
@@ -142,7 +156,7 @@ def check_input(message: str) -> bool:
 def clean_for_speech(text: str) -> str:
     resp = anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=512,
+        max_tokens=300,
         messages=[
             {"role": "user", "content": f"{OUTPUT_GUARDRAIL_PROMPT}\n\nResponse:\n{text}"}
         ],
@@ -163,13 +177,31 @@ def extract_section(text: str) -> tuple[str, str | None]:
         return clean, None
 
 
+def sanitize_for_tts(text: str) -> str:
+    # Strip any residual XML tags, JSON fragments, or non-English characters
+    text = re.sub(r'<[^>]+>', '', text)           # remove any XML/HTML tags
+    text = re.sub(r'\{[^}]+\}', '', text)         # remove JSON-like fragments
+    text = re.sub(r'[^\x00-\x7F]+', '', text)     # remove non-ASCII characters
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
 def generate_audio(text: str) -> str | None:
+    clean = sanitize_for_tts(text)
+    print(f"TTS input: {clean!r}")
+    if not clean:
+        return None
     try:
         chunks = elevenlabs_client.text_to_speech.convert(
             voice_id=VOICE_ID,
-            text=text,
+            text=clean,
             model_id="eleven_turbo_v2_5",
             output_format="mp3_44100_128",
+            voice_settings=VoiceSettings(
+                stability=0.35,
+                similarity_boost=0.80,
+                style=0.20,
+                use_speaker_boost=True,
+            ),
         )
         audio_bytes = b"".join(chunks)
         return base64.b64encode(audio_bytes).decode("utf-8")
@@ -207,7 +239,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     messages = req.history[-10:] + [{"role": "user", "content": req.message}]
     raw_resp = anthropic_client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=512,
+        max_tokens=300,
         system=SYSTEM_PROMPT,
         messages=messages,
     )
