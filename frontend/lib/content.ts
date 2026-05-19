@@ -156,6 +156,37 @@ export const projects: ProjectEntry[] = [
     tags:   ['Pydantic', 'OpenAI API', 'LLMs', 'Agentic Architecture'],
     github: 'https://github.com/joeyb007/Scholr',
   },
+  {
+    name:        'Studeal',
+    description: 'AI research assistant that grounds LLM responses in scientific research',
+    bullets: [
+      'Aggregates results from 200M+ peer-reviewed papers',
+      'Uses a multi-agent architecture to recursively generate queries, aggregate results, and expand into related subtopics',
+      'Exposed both via TUI and as a callable MCP tool for Claude integration'
+    ],
+    tags:   ['Pydantic', 'OpenAI API', 'LLMs', 'Agentic Architecture'],
+    github: 'https://github.com/joeyb007/Scholr',
+  },
+  {
+    name:        'Pantrypal',
+    description: 'AI research assistant that grounds LLM responses in scientific research',
+    bullets: [
+      'Aggregates results from 200M+ peer-reviewed papers',
+      'Uses a multi-agent architecture to recursively generate queries, aggregate results, and expand into related subtopics',
+      'Exposed both via TUI and as a callable MCP tool for Claude integration'
+    ],
+    tags:   ['Pydantic', 'OpenAI API', 'LLMs', 'Agentic Architecture'],
+    github: 'https://github.com/joeyb007/Scholr',
+  },
+  {
+    name:        'From Scratch',
+    description: 'An assortment of DL implementations, in python, from scratch',
+    bullets: [
+      'The best way to learn is by doing; this repository does exactly that',
+    ],
+    tags:   ['Deep Learning', 'Backpropogation'],
+    github: 'https://github.com/joeyb007/Scholr',
+  },
 ]
 
 // ---------------------------------------------------------------------------

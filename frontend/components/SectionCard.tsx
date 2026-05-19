@@ -88,7 +88,7 @@ export default function SectionCard({ activeSectionId, onOpen }: Props) {
         lineHeight: 1.6,
         margin:     '0 0 16px',
       }}>
-        {cfg.description}
+        {cfg.lobeFunction} {cfg.sectionDesc}
       </p>
       <p style={{
         fontFamily:    'var(--font-geist-mono), monospace',

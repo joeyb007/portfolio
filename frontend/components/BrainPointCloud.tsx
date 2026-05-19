@@ -13,11 +13,11 @@ const ACTIVE_SIZE   = 0.06
 // Bottom-to-top scan order (0 = first to appear, 1 = last)
 const REVEAL_ORDER: Record<string, number> = {
   contact:    0.00,   // cerebellum — lowest
-  projects:   0.15,   // temporal posterior
-  experience: 0.30,   // temporal anterior
-  blog:       0.45,   // occipital
-  about:      0.60,   // frontal
-  personal:   0.80,   // parietal crown — highest
+  personal:   0.15,   // limbic — lower right
+  experience: 0.30,   // temporal — lower left
+  about:      0.50,   // frontal — upper left
+  blog:       0.65,   // occipital — upper right
+  projects:   0.80,   // parietal crown — highest
 }
 
 // Transfer "excess red" into the blue channel so red regions become blue,
@@ -47,20 +47,20 @@ interface SetupResult {
 // Divides the brain into 6 distinct spatial regions:
 //
 //         ┌──────────────────┐
-//         │   PERSONAL       │  ny > 0.38  (parietal crown)
+//         │    PROJECTS      │  ny > 0.38  (parietal crown)
 //         ├─────────┬────────┤
-//         │  BLOG   │ ABOUT  │  ny 0..0.38 (occipital / frontal)
+//         │  ABOUT  │  BLOG  │  ny 0..0.38 (frontal / occipital)
 //         ├─────────┼────────┤
-//         │PROJECTS │EXPERIE.│  ny -0.3..0 (temporal post / ant)
+//         │EXPERIE. │PERSONAL│  ny -0.3..0 (temporal / limbic)
 //         ├──────────────────┤
 //         │    CONTACT       │  ny < -0.3  (cerebellum)
 //         └──────────────────┘
 //
 function lobeForVertex(nx: number, ny: number): SectionId {
-  if (ny >  0.38) return 'personal'    // parietal crown
-  if (ny < -0.30) return 'contact'     // cerebellum / lower
-  if (ny >= 0) return nx >= 0 ? 'about'      : 'blog'        // frontal / occipital
-  return              nx >= 0 ? 'experience' : 'projects'    // temporal ant / post
+  if (ny >  0.38) return 'projects'    // parietal crown (top)
+  if (ny < -0.30) return 'contact'     // cerebellum (bottom)
+  if (ny >= 0) return nx < 0 ? 'about'      : 'blog'        // frontal (front) / occipital (back)
+  return              nx < 0 ? 'experience' : 'personal'    // temporal / limbic
 }
 
 function buildBlueBrain(scene: THREE.Object3D): SetupResult {

@@ -2,6 +2,17 @@
 
 import { useState, useEffect, useRef, forwardRef } from 'react'
 import { REGION_CONFIGS, type SectionId } from '@/lib/regionMap'
+import { PROJECTS } from '@/lib/projects'
+import type { HologramBullet } from '@/lib/regionMap'
+
+function parseBold(text: string): React.ReactNode {
+  const parts = text.split(/\*\*/)
+  return parts.map((p, i) =>
+    i % 2 === 1
+      ? <span key={i} style={{ color: '#fff', fontWeight: 600, textShadow: '0 0 8px rgba(0,220,255,0.5)' }}>{p}</span>
+      : p
+  )
+}
 
 interface Props {
   sectionId: SectionId
@@ -35,8 +46,12 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
   { sectionId, visible },
   ref,
 ) {
-  const [displayed,   setDisplayed]   = useState(sectionId)
-  const [cardVisible, setCardVisible] = useState(true)
+  const [displayed,    setDisplayed]   = useState(sectionId)
+  const [cardVisible,  setCardVisible] = useState(true)
+  const [projectIdx,   setProjectIdx]  = useState(0)
+  const carouselDir    = useRef<'left' | 'right'>('right')
+
+  useEffect(() => { setProjectIdx(0) }, [displayed])
   const displayedRef = useRef(sectionId)
   const canvasRef    = useRef<HTMLCanvasElement>(null)
   const rafRef       = useRef<number | null>(null)
@@ -161,6 +176,18 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           50%  { transform: translateY(-70px); opacity: 0; }
           100% { transform: translateY(-70px); opacity: 0; }
         }
+        @keyframes slideInRight {
+          from { transform: translateX(24px); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes slideInLeft {
+          from { transform: translateX(-24px); opacity: 0; }
+          to   { transform: translateX(0);     opacity: 1; }
+        }
+        @keyframes chipsTicker {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
       `}</style>
 
       <div
@@ -172,7 +199,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           animation:     'holoFloat 5s ease-in-out infinite',
           zIndex:        15,
           width:         252,
-          height:        300,
+          height:        340,
           opacity:       visible ? 1 : 0,
           transition:    'opacity 0.4s ease',
           pointerEvents: 'none',
@@ -227,31 +254,176 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           <Corner bottom={5} left={5} />
           <Corner bottom={5} right={5} />
 
-          <div key={displayed} style={{ position: 'relative', zIndex: 1 }}>
-            <p style={{ ...mono, color: 'rgba(0,220,255,0.7)', margin: '0 0 3px', textShadow: '0 0 8px rgba(0,200,255,0.5)' }}>
-              ◆ {cfg.lobe}
-            </p>
-            <p style={{ color: '#fff', fontSize: 15, fontWeight: 700, margin: '0 0 6px', lineHeight: 1.1, letterSpacing: '-0.01em', textShadow: '0 0 12px rgba(0,220,255,0.9)' }}>
-              {cfg.label}
-            </p>
-            <p style={{ color: 'rgba(150,230,255,0.55)', fontSize: 10, lineHeight: 1.6, margin: '0 0 10px', fontStyle: 'italic' }}>
-              {cfg.description}
-            </p>
+          <div key={displayed} style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
 
-            <div style={{ borderTop: '1px solid rgba(0,220,255,0.15)', margin: '0 0 10px' }} />
-
-            <ul style={{ margin: '0 0 12px', padding: '0 0 0 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-              {cfg.hologramBullets.map((b, i) => (
-                <li key={i} style={{ color: 'rgba(200,240,255,0.85)', fontSize: 11, lineHeight: 1.5, textShadow: '0 0 6px rgba(0,200,255,0.3)' }}>
-                  {b}
-                </li>
-              ))}
-            </ul>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(0,220,255,0.3), transparent)' }} />
-              <p style={{ ...mono, color: 'rgba(0,220,255,0.5)', margin: 0, fontSize: 8 }}>ask me →</p>
+            {/* Section | Lobe — one-line header */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
+              <p style={{ color: '#fff', fontSize: 15, fontWeight: 700, margin: 0, lineHeight: 1, letterSpacing: '-0.02em', textShadow: '0 0 14px rgba(0,220,255,0.9)', whiteSpace: 'nowrap' }}>
+                {cfg.label}
+              </p>
+              <span style={{ color: 'rgba(0,220,255,0.35)', fontSize: 11, fontWeight: 300, flexShrink: 0 }}>|</span>
+              <p style={{ ...mono, fontSize: 8, color: 'rgba(0,220,255,0.7)', margin: 0, lineHeight: 1, whiteSpace: 'nowrap', textShadow: '0 0 8px rgba(0,200,255,0.4)' }}>
+                {cfg.lobe}
+              </p>
             </div>
+
+            {/* Scientific lobe function */}
+            <p style={{ ...mono, color: 'rgba(0,220,255,0.5)', fontSize: 8, lineHeight: 1.5, margin: '0 0 3px', letterSpacing: '0.06em' }}>
+              {cfg.lobeFunction}
+            </p>
+            {/* Personal section description */}
+            <p style={{ color: 'rgba(180,230,255,0.65)', fontSize: 9.5, lineHeight: 1.55, margin: '0 0 8px' }}>
+              {cfg.sectionDesc}
+            </p>
+
+            <div style={{ borderTop: '1px solid rgba(0,220,255,0.15)', margin: '0 0 8px' }} />
+
+            {displayed === 'projects' ? (
+              // ── Project carousel ────────────────────────────────────────
+              <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, pointerEvents: 'auto' }}>
+                <p style={{ color: '#fff', fontSize: 12, fontWeight: 700, margin: 0, lineHeight: 1.1, letterSpacing: '-0.01em', textShadow: '0 0 10px rgba(0,220,255,0.8)' }}>
+                  {PROJECTS[projectIdx].name}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+                  <button
+                    onClick={() => { carouselDir.current = 'left'; setProjectIdx(i => (i - 1 + PROJECTS.length) % PROJECTS.length) }}
+                    style={{ ...mono, background: 'none', border: 'none', color: 'rgba(0,220,255,0.6)', cursor: 'pointer', padding: '0 2px', fontSize: 11, lineHeight: 1 }}
+                  >‹</button>
+                  <span style={{ ...mono, color: 'rgba(0,220,255,0.4)', fontSize: 8 }}>{projectIdx + 1}/{PROJECTS.length}</span>
+                  <button
+                    onClick={() => { carouselDir.current = 'right'; setProjectIdx(i => (i + 1) % PROJECTS.length) }}
+                    style={{ ...mono, background: 'none', border: 'none', color: 'rgba(0,220,255,0.6)', cursor: 'pointer', padding: '0 2px', fontSize: 11, lineHeight: 1 }}
+                  >›</button>
+                </div>
+              </div>
+
+              {/* Sliding content — keyed so it remounts + animates on index change */}
+              <div
+                key={`proj-${projectIdx}`}
+                style={{
+                  display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0,
+                  animation: `${carouselDir.current === 'right' ? 'slideInRight' : 'slideInLeft'} 0.22s ease`,
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Tagline */}
+                {PROJECTS[projectIdx].tagline && (
+                  <p style={{ color: 'rgba(150,230,255,0.55)', fontSize: 9, lineHeight: 1.5, margin: '0 0 6px', fontStyle: 'italic',
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {PROJECTS[projectIdx].tagline}
+                  </p>
+                )}
+
+                {/* Tech stack — scrolling chips ticker */}
+                {PROJECTS[projectIdx].stack.length > 0 && (
+                  <div style={{ overflow: 'hidden', margin: '0 0 6px', maskImage: 'linear-gradient(to right, transparent, black 8%, black 92%, transparent)' }}>
+                    <div style={{
+                      display: 'flex', gap: 4, width: 'max-content',
+                      animation: `chipsTicker ${PROJECTS[projectIdx].stack.length * 1.6}s linear infinite`,
+                    }}>
+                      {[...PROJECTS[projectIdx].stack, ...PROJECTS[projectIdx].stack].map((chip, i) => (
+                        <span key={i} style={{
+                          ...mono, fontSize: 7, padding: '2px 5px', whiteSpace: 'nowrap',
+                          border: '1px solid rgba(0,220,255,0.25)', borderRadius: 3,
+                          color: 'rgba(0,220,255,0.65)', background: 'rgba(0,220,255,0.05)',
+                        }}>{chip}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description paragraph */}
+                {PROJECTS[projectIdx].bullets[0] && (
+                  <p style={{ color: 'rgba(200,240,255,0.78)', fontSize: 10, lineHeight: 1.6, margin: '0 0 6px',
+                    display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                    textShadow: '0 0 6px rgba(0,200,255,0.25)' }}>
+                    {PROJECTS[projectIdx].bullets[0]}
+                  </p>
+                )}
+
+                {/* Links */}
+                <div style={{ display: 'flex', gap: 12, marginTop: 'auto', pointerEvents: 'auto' }}>
+                  {PROJECTS[projectIdx].github && (
+                    <a href={PROJECTS[projectIdx].github} target="_blank" rel="noopener noreferrer"
+                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
+                      GitHub ↗
+                    </a>
+                  )}
+                  {PROJECTS[projectIdx].youtubeId && (
+                    <a href={`https://youtu.be/${PROJECTS[projectIdx].youtubeId}`} target="_blank" rel="noopener noreferrer"
+                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
+                      Demo ↗
+                    </a>
+                  )}
+                </div>
+              </div>
+              </>
+            ) : (
+              // ── Content: paragraphs + category blocks ─────────────────────
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {cfg.hologramBullets.map((item: HologramBullet, i: number) =>
+                  typeof item === 'string' ? (
+                    <p key={i} style={{ color: 'rgba(200,240,255,0.72)', fontSize: 10.5,
+                      lineHeight: 1.7, margin: 0, textShadow: '0 0 6px rgba(0,200,255,0.25)' }}>
+                      {parseBold(item)}
+                    </p>
+                  ) : (
+                    <div key={i}>
+                      <p style={{ ...mono, color: 'rgba(0,220,255,0.55)', fontSize: 8,
+                        margin: '0 0 4px', fontStyle: 'italic' }}>
+                        • {item.category}:
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {item.items.map((b, j) => (
+                          <div key={j} style={{ paddingLeft: 6 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                              <span style={{ color: 'rgba(0,220,255,0.35)', fontSize: 9, flexShrink: 0 }}>↳</span>
+                              {b.note && (
+                                <span style={{ ...mono, color: 'rgba(180,230,255,0.45)', fontSize: 8, flexShrink: 0 }}>
+                                  {b.note}
+                                </span>
+                              )}
+                              {b.logo && (
+                                <img src={`/logos/${b.logo}`} alt={b.text}
+                                  style={{ height: 13, width: 'auto', flexShrink: 0, opacity: 0.9 }} />
+                              )}
+                              {b.link ? (
+                                <a
+                                  href={b.link}
+                                  target={b.link.startsWith('mailto') ? undefined : '_blank'}
+                                  rel="noopener noreferrer"
+                                  style={{ color: 'rgba(0,220,255,0.8)', fontSize: 10.5, fontWeight: 600,
+                                    lineHeight: 1.4, textDecoration: 'none', pointerEvents: 'auto' }}
+                                  onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
+                                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.8)')}
+                                >
+                                  {b.text} ↗
+                                </a>
+                              ) : (
+                                <span style={{ color: 'rgba(200,240,255,0.9)', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4 }}>
+                                  {b.text}
+                                </span>
+                              )}
+                            </div>
+                            {b.desc && (
+                              <p style={{ color: 'rgba(180,220,255,0.55)', fontSize: 9, lineHeight: 1.5,
+                                margin: '2px 0 0 14px' }}>
+                                {b.desc}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -262,7 +434,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
             position:      'absolute',
             inset:         0,
             width:         '100%',
-            height:        '100%',
+            height:        340,
             pointerEvents: 'none',
             zIndex:        20,
           }}

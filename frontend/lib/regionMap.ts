@@ -6,13 +6,32 @@ export type SectionId =
   | 'personal'
   | 'contact'
 
+// A single indented item inside a category block
+export interface BulletItem {
+  text:  string    // company/school name shown after the logo
+  logo?: string    // filename inside /logos/
+  note?: string    // short prefix shown before the logo, e.g. "CS + AI @"
+  desc?: string    // description shown below text, e.g. role or detail
+  link?: string    // makes the item a clickable link
+}
+
+// A labelled category group, e.g. { category: 'currently', items: [...] }
+export interface BulletCategory {
+  category: string
+  items:     BulletItem[]
+}
+
+// Each entry in hologramBullets is either a plain paragraph or a category group
+export type HologramBullet = string | BulletCategory
+
 export interface RegionConfig {
   sectionId:       SectionId
   label:           string
   color:           string
   lobe:            string
-  description:     string
-  hologramBullets: string[]
+  lobeFunction:    string
+  sectionDesc:     string
+  hologramBullets: HologramBullet[]
 }
 
 export const SECTIONS: SectionId[] = [
@@ -26,30 +45,63 @@ export const CONTENT_SECTIONS: SectionId[] = [
 export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
   about: {
     sectionId: 'about', label: 'About', color: '#7dd8ff',
-    lobe: 'Frontal Lobe',
-    description: 'The seat of identity and personality. Who I am, what drives me, and the perspective I bring.',
+    lobe:         'Frontal Lobe',
+    lobeFunction: 'The seat of identity and personality.',
+    sectionDesc:  'Who I am, what drives me, and the perspective I bring.',
     hologramBullets: [
-      'CS/BBA double degree · Waterloo × Laurier',
-      'Concentrating in AI and strategic management',
-      'Full-stack builder — model to interface',
-      'Seeking Winter 2027 internships',
+      {
+        category: 'currently',
+        items: [
+          { note: 'CS + AI @',  logo: 'waterloo.png', text: 'University of Waterloo'    },
+          { note: 'BBA @',      logo: 'laurier.png',  text: 'Wilfrid Laurier University' },
+        ],
+      },
+      "Exploring SWE, AI, ML, product, and design. I see myself as a jack of all trades, equipping myself for the high-agency era of AI.",
+      {
+        category: 'seeking',
+        items: [
+          { text: 'Winter 2027 internships · Jan start' },
+          { text: 'Roles across SWE, AI, and product' },
+          { text: 'Fast-moving, high-agency teams' },
+        ],
+      },
     ],
   },
   experience: {
     sectionId: 'experience', label: 'Experience', color: '#7dd8ff',
-    lobe: 'Temporal Lobe',
-    description: "Memory and pattern recognition. Roles, teams, and the problems I've worked on.",
+    lobe:         'Temporal Lobe',
+    lobeFunction: 'Memory and pattern recognition.',
+    sectionDesc:  "Roles, teams, and the problems I've worked on.",
     hologramBullets: [
-      'Scotiabank · SWE Intern · Consumer Banking (2026)',
-      'ESGTree · ReAct NL-to-SQL · 98 tables · 90%+ eval accuracy',
-      'FuturIQ · ML housing prediction · 1000+ live GTA listings',
-      '3 internships across AI, full-stack, and product',
+      {
+        category: 'currently',
+        items: [
+          {
+            logo: 'Scotiabank.png', text: 'Scotiabank',
+            desc: 'Leading an agentic QA initiative on the CBE banking platform, building an LLM agent for regression tests from code diffs in CI/CD',
+          },
+        ],
+      },
+      {
+        category: 'previously',
+        items: [
+          {
+            logo: 'ESGTree.png', text: 'ESGTree',
+            desc: 'Pioneered a ReAct NL-to-SQL agent with Python codegen for data analysis and trend projection',
+          },
+          {
+            logo: 'FuturIQ.png', text: 'FuturIQ',
+            desc: 'Owned an end-to-end ML platform scraping 1000+ live GTA listings, taking a regularized polynomial model from training to production',
+          },
+        ],
+      },
     ],
   },
   projects: {
     sectionId: 'projects', label: 'Projects', color: '#7dd8ff',
-    lobe: 'Parietal Lobe',
-    description: "Spatial reasoning and problem-solving. Things I've built and shipped.",
+    lobe:          'Parietal Lobe',
+    lobeFunction:  'Spatial reasoning and problem-solving.',
+    sectionDesc:   "Things I've built and shipped.",
     hologramBullets: [
       'Scholr · AI research assistant over 200M+ papers',
       'Multi-agent: recursive queries + subtopic expansion',
@@ -59,34 +111,46 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
   },
   blog: {
     sectionId: 'blog', label: 'Blog', color: '#7dd8ff',
-    lobe: 'Occipital Lobe',
-    description: "Processing and output. Writing on AI, ML, and whatever I'm thinking about.",
+    lobe:          'Occipital Lobe',
+    lobeFunction:  'Processing and output.',
+    sectionDesc:   "Technical and personal writing.",
     hologramBullets: [
-      'Writing on AI systems and agentic architectures',
-      'ML research commentary and breakdowns',
       'Coming soon',
     ],
   },
   personal: {
     sectionId: 'personal', label: 'Personal', color: '#7dd8ff',
-    lobe: 'Limbic System',
-    description: 'Emotion and motivation. Fitness, cooking, and life outside the terminal.',
+    lobe:          'Limbic System',
+    lobeFunction:  'Emotion and motivation.',
+    sectionDesc:   'Fitness, cooking, and life outside the terminal.',
     hologramBullets: [
-      'Training for a full marathon + 225lb bench',
-      'Cooking optimized for macros',
-      '12+ case competitions · $3k+ in winnings',
-      "Dwarkesh · Lenny's · Morning Brew — always queued",
+      "I'm huge into exercise, **strength training** 6 times per week. I'm currently chasing a **225lb bench** and **full marathon**. I'm also an avid **road-cyclist** and **amateur golfer**. Beyond sport, I love to **cook** — I learn a new recipe via LLMs each week, always optimizing for macros. In my free time, I participate in **business case competitions**, having completed over 12 with winnings exceeding $3000. I'm also a huge podcast fan, with **Lenny's Podcast** and **Dwarkesh** on repeat.",
     ],
   },
   contact: {
     sectionId: 'contact', label: 'Contact', color: '#7dd8ff',
-    lobe: 'Cerebellum',
-    description: "Coordination and reach. Let's connect, collaborate, or just talk.",
+    lobe:          'Cerebellum',
+    lobeFunction:  'Coordination and reach.',
+    sectionDesc:   "Let's connect, collaborate, or just talk.",
     hologramBullets: [
-      'josephbarbosa416@gmail.com',
-      'linkedin.com/in/joseph-c-barbosa',
-      'github.com/joeyb007',
-      'Open to Winter 2027 internships · Jan start',
+      "I'm always open to new opportunities, collaborations, or just a good conversation.",
+      {
+        category: 'reach me',
+        items: [
+          { text: 'josephbarbosa416@gmail.com',        link: 'mailto:josephbarbosa416@gmail.com'              },
+          { text: 'j4barbos@uwaterloo.ca',             link: 'mailto:j4barbos@uwaterloo.ca'                   },
+          { text: 'linkedin/joseph-c-barbosa',         link: 'https://linkedin.com/in/joseph-c-barbosa'       },
+          { text: 'github/joeyb007',                   link: 'https://github.com/joeyb007'                    },
+          { text: 'x/josephbarbosa00',                 link: 'https://x.com/josephbarbosa00'                  },
+        ],
+      },
+      {
+        category: 'availability',
+        items: [
+          { text: 'Open to Winter 2027 (Jan) internships' },
+          { text: 'Always looking to build, learn, and grow; if there\'s an idea, I\'m interested' },
+        ],
+      },
     ],
   },
 }
