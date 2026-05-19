@@ -208,7 +208,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           }),
           animation:     isMobile ? 'holoFloatMobile 5s ease-in-out infinite' : 'holoFloat 5s ease-in-out infinite',
           zIndex:        15,
-          height:        isMobile ? 230 : 310,
+          height:        isMobile ? 'auto' : 310,
           opacity:       visible ? 1 : 0,
           transition:    'opacity 0.4s ease',
           pointerEvents: 'none',
@@ -224,7 +224,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           border:               '1px solid rgba(0,220,255,0.45)',
           borderRadius:         '0px',
           padding:              '16px',
-          height:               '100%',
+          height:               isMobile ? 'auto' : '100%',
           boxSizing:            'border-box',
           boxShadow: [
             '0 0 0 1px rgba(0,220,255,0.12)',
@@ -263,7 +263,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           <Corner bottom={5} left={5} />
           <Corner bottom={5} right={5} />
 
-          <div key={displayed} style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div key={displayed} style={{ position: 'relative', zIndex: 1, height: isMobile ? 'auto' : '100%', display: 'flex', flexDirection: 'column' }}>
 
             {/* Section | Lobe — one-line header */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
@@ -469,7 +469,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
             position:      'absolute',
             inset:         0,
             width:         '100%',
-            height:        310,
+            height:        '100%',
             pointerEvents: 'none',
             zIndex:        20,
           }}
