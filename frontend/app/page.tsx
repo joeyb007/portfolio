@@ -124,9 +124,9 @@ export default function Home() {
         style={{
           position:      'fixed',
           left:          '5vw',
-          bottom:        '10vh',
+          bottom:        isMobile ? '14vh' : '10vh',
           zIndex:        10,
-          maxWidth:      360,
+          maxWidth:      isMobile ? '90vw' : 360,
           opacity:       messages.length > 0 ? 0 : 1,
           transition:    'opacity 0.6s ease',
           pointerEvents: messages.length > 0 ? 'none' : 'auto',
@@ -212,7 +212,7 @@ export default function Home() {
         </div>
       </div>
 
-      {activeSectionId && (
+      {!isMobile && activeSectionId && (
         <HologramCard ref={setCardEl} sectionId={activeSectionId} visible={true} />
       )}
 

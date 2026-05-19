@@ -420,6 +420,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                                   href={b.link}
                                   target={b.link.startsWith('mailto') ? undefined : '_blank'}
                                   rel="noopener noreferrer"
+                                  download={b.link.endsWith('.pdf') ? true : undefined}
                                   style={{ color: 'rgba(0,220,255,0.8)', fontSize: 10.5, fontWeight: 600,
                                     lineHeight: 1.4, textDecoration: 'none', pointerEvents: 'auto' }}
                                   onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
