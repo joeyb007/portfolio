@@ -134,21 +134,19 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
     if (displayedRef.current === sectionId) return
     clearTransition()
 
-    setCardVisible(false)
     runPixelBurst(
-      260,
-      180,
-      () => setCardVisible(false),
+      280,
+      200,
+      () => setCardVisible(false), // hide only when fully covered by pixels
       () => {
         displayedRef.current = sectionId
         setDisplayed(sectionId)
 
         const t = setTimeout(() => {
-          setCardVisible(true)
           runPixelBurst(
-            160,
-            320,
-            undefined,
+            180,
+            340,
+            () => setCardVisible(true), // reveal only when fully covered by pixels
             undefined,
           )
         }, 40)
@@ -199,7 +197,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           animation:     'holoFloat 5s ease-in-out infinite',
           zIndex:        15,
           width:         252,
-          height:        340,
+          height:        310,
           opacity:       visible ? 1 : 0,
           transition:    'opacity 0.4s ease',
           pointerEvents: 'none',
@@ -208,12 +206,12 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
         {/* Card visual */}
         <div style={{
           opacity:              cardVisible ? 1 : 0,
-          transition:           'opacity 0.14s ease',
+          transition:           'opacity 0.18s ease',
           background:           'rgba(0,200,240,0.04)',
           backdropFilter:       'blur(6px)',
           WebkitBackdropFilter: 'blur(6px)',
           border:               '1px solid rgba(0,220,255,0.45)',
-          borderRadius:         '10px',
+          borderRadius:         '0px',
           padding:              '16px',
           height:               '100%',
           boxSizing:            'border-box',
@@ -232,7 +230,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
             position:      'absolute',
             inset:         0,
             background:    'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,220,255,0.025) 3px, rgba(0,220,255,0.025) 6px)',
-            borderRadius:  'inherit',
+            borderRadius:  '0px',
             pointerEvents: 'none',
             zIndex:        0,
           }} />
@@ -310,7 +308,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                 {/* Tagline */}
                 {PROJECTS[projectIdx].tagline && (
                   <p style={{ color: 'rgba(150,230,255,0.55)', fontSize: 9, lineHeight: 1.5, margin: '0 0 6px', fontStyle: 'italic',
-                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    whiteSpace: 'pre-line', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {PROJECTS[projectIdx].tagline}
                   </p>
                 )}
@@ -336,28 +334,51 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                 {/* Description paragraph */}
                 {PROJECTS[projectIdx].bullets[0] && (
                   <p style={{ color: 'rgba(200,240,255,0.78)', fontSize: 10, lineHeight: 1.6, margin: '0 0 6px',
-                    display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                    whiteSpace: 'pre-line', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'hidden' as any, overflow: 'hidden',
                     textShadow: '0 0 6px rgba(0,200,255,0.25)' }}>
                     {PROJECTS[projectIdx].bullets[0]}
                   </p>
                 )}
 
+                {/* Built so far — ↳ list */}
+                {PROJECTS[projectIdx].builtSoFar && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <p style={{ ...mono, color: 'rgba(0,220,255,0.55)', fontSize: 8, margin: '0 0 3px', fontStyle: 'italic' }}>
+                      • built so far:
+                    </p>
+                    {PROJECTS[projectIdx].builtSoFar!.map((item, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 6 }}>
+                        <span style={{ color: 'rgba(0,220,255,0.35)', fontSize: 9, flexShrink: 0 }}>↳</span>
+                        <span style={{ color: 'rgba(200,240,255,0.85)', fontSize: 10.5, lineHeight: 1.4 }}>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Links */}
-                <div style={{ display: 'flex', gap: 12, marginTop: 'auto', pointerEvents: 'auto' }}>
+                <div style={{ display: 'flex', gap: 12, marginTop: 'auto', pointerEvents: 'auto', flexWrap: 'nowrap' }}>
                   {PROJECTS[projectIdx].github && (
                     <a href={PROJECTS[projectIdx].github} target="_blank" rel="noopener noreferrer"
-                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none' }}
+                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
                       onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
                       onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
                       GitHub ↗
                     </a>
                   )}
-                  {PROJECTS[projectIdx].youtubeId && (
-                    <a href={`https://youtu.be/${PROJECTS[projectIdx].youtubeId}`} target="_blank" rel="noopener noreferrer"
-                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none' }}
+                  {PROJECTS[projectIdx].liveUrl && (
+                    <a href={PROJECTS[projectIdx].liveUrl} target="_blank" rel="noopener noreferrer"
+                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
                       onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
                       onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
-                      Demo ↗
+                      Try it live ↗
+                    </a>
+                  )}
+                  {PROJECTS[projectIdx].youtubeId && (
+                    <a href={`https://youtu.be/${PROJECTS[projectIdx].youtubeId}`} target="_blank" rel="noopener noreferrer"
+                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
+                      Watch demo ↗
                     </a>
                   )}
                 </div>
@@ -374,10 +395,12 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                     </p>
                   ) : (
                     <div key={i}>
-                      <p style={{ ...mono, color: 'rgba(0,220,255,0.55)', fontSize: 8,
-                        margin: '0 0 4px', fontStyle: 'italic' }}>
-                        • {item.category}:
-                      </p>
+                      {item.category && (
+                        <p style={{ ...mono, color: 'rgba(0,220,255,0.55)', fontSize: 8,
+                          margin: '0 0 4px', fontStyle: 'italic' }}>
+                          • {item.category}:
+                        </p>
+                      )}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {item.items.map((b, j) => (
                           <div key={j} style={{ paddingLeft: 6 }}>
@@ -405,7 +428,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                                   {b.text} ↗
                                 </a>
                               ) : (
-                                <span style={{ color: 'rgba(200,240,255,0.9)', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4 }}>
+                                <span style={{ color: 'rgba(200,240,255,0.85)', fontSize: 10.5, fontWeight: b.logo ? 600 : 400, lineHeight: 1.4 }}>
                                   {b.text}
                                 </span>
                               )}
@@ -434,7 +457,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
             position:      'absolute',
             inset:         0,
             width:         '100%',
-            height:        340,
+            height:        310,
             pointerEvents: 'none',
             zIndex:        20,
           }}

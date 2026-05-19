@@ -87,14 +87,15 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
         items: [
           {
             logo: 'ESGTree.png', text: 'ESGTree',
-            desc: 'Pioneered a ReAct NL-to-SQL agent with Python codegen for data analysis and trend projection',
+            desc: 'Pioneered a NL-to-SQL agent with Python codegen for data analysis and trend projection',
           },
           {
             logo: 'FuturIQ.png', text: 'FuturIQ',
-            desc: 'Owned an end-to-end ML platform scraping 1000+ live GTA listings, taking a regularized polynomial model from training to production',
+            desc: 'ML platform scraping 1000+ live GTA listings; polynomial model from training to production',
           },
         ],
       },
+      { category: '', items: [{ text: 'View my resume', link: '/resume.pdf' }] },
     ],
   },
   projects: {
@@ -124,7 +125,23 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     lobeFunction:  'Emotion and motivation.',
     sectionDesc:   'Fitness, cooking, and life outside the terminal.',
     hologramBullets: [
-      "I'm huge into exercise, **strength training** 6 times per week. I'm currently chasing a **225lb bench** and **full marathon**. I'm also an avid **road-cyclist** and **amateur golfer**. Beyond sport, I love to **cook** — I learn a new recipe via LLMs each week, always optimizing for macros. In my free time, I participate in **business case competitions**, having completed over 12 with winnings exceeding $3000. I'm also a huge podcast fan, with **Lenny's Podcast** and **Dwarkesh** on repeat.",
+      {
+        category: 'sport',
+        items: [
+          { text: 'Strength training 6x/week' },
+          { text: 'Chasing a 225lb bench + full marathon' },
+          { text: 'Road cyclist + amateur golfer' },
+        ],
+      },
+      {
+        category: 'outside the gym',
+        items: [
+          { text: 'Cook a new LLM-sourced recipe weekly, always optimizing for macros' },
+          { text: '12+ case competitions · $3k+ in winnings' },
+          { text: "Lenny's Podcast + Dwarkesh on repeat" },
+          { text: 'Currently reading: Thinking Fast and Slow' },
+        ],
+      },
     ],
   },
   contact: {
@@ -138,7 +155,6 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
         category: 'reach me',
         items: [
           { text: 'josephbarbosa416@gmail.com',        link: 'mailto:josephbarbosa416@gmail.com'              },
-          { text: 'j4barbos@uwaterloo.ca',             link: 'mailto:j4barbos@uwaterloo.ca'                   },
           { text: 'linkedin/joseph-c-barbosa',         link: 'https://linkedin.com/in/joseph-c-barbosa'       },
           { text: 'github/joeyb007',                   link: 'https://github.com/joeyb007'                    },
           { text: 'x/josephbarbosa00',                 link: 'https://x.com/josephbarbosa00'                  },
