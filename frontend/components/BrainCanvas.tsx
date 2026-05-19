@@ -108,17 +108,14 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
     <div
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: isMobile ? '45vh' : 0,
+        inset: 0,
         zIndex: 0,
-        opacity: isMobile ? 0.45 : 1,
+        opacity: isMobile ? 0.35 : 1,
         pointerEvents: isMobile ? 'none' : 'auto',
       }}
     >
       <Canvas
-        camera={{ position: [0, 0.3, 5.5], fov: 35 }}
+        camera={{ position: [0, 0.3, isMobile ? 9 : 5.5], fov: 35 }}
         gl={{ antialias: true, alpha: true }}
         dpr={isMobile ? [1, 1.5] : [1, 2]}
       >
