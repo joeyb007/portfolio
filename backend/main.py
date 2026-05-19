@@ -178,10 +178,11 @@ def extract_section(text: str) -> tuple[str, str | None]:
 
 
 def sanitize_for_tts(text: str) -> str:
-    # Strip any residual XML tags, JSON fragments, or non-English characters
-    text = re.sub(r'<[^>]+>', '', text)           # remove any XML/HTML tags
+    text = re.sub(r'<[^>]+>', '', text)           # remove XML/HTML tags
     text = re.sub(r'\{[^}]+\}', '', text)         # remove JSON-like fragments
     text = re.sub(r'[^\x00-\x7F]+', '', text)     # remove non-ASCII characters
+    # Newlines after sentence-ending punctuation give ElevenLabs a clear breath pause
+    text = re.sub(r'([.?!])\s+', r'\1\n', text)
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
@@ -197,9 +198,9 @@ def generate_audio(text: str) -> str | None:
             model_id="eleven_turbo_v2_5",
             output_format="mp3_44100_128",
             voice_settings=VoiceSettings(
-                stability=0.35,
+                stability=0.50,
                 similarity_boost=0.80,
-                style=0.20,
+                style=0.10,
                 use_speaker_boost=True,
             ),
         )

@@ -127,16 +127,21 @@ function AudioPlayer({ audio, autoPlay, onSpeaking }: AudioPlayerProps) {
 
 // ── Typewriter reveal ─────────────────────────────────────────────────────────
 
-function TypewriterText({ text, isNew }: { text: string; isNew: boolean }) {
+function TypewriterText({ text, isNew, onDone }: { text: string; isNew: boolean; onDone?: () => void }) {
   const [displayed, setDisplayed] = useState(isNew ? '' : text)
+  const onDoneRef = useRef(onDone)
+  useEffect(() => { onDoneRef.current = onDone })
 
   useEffect(() => {
-    if (!isNew) return   // initial state already set correctly for non-new messages
+    if (!isNew) return
     let i = 0
     const id = setInterval(() => {
       i++
       setDisplayed(text.slice(0, i))
-      if (i >= text.length) clearInterval(id)
+      if (i >= text.length) {
+        clearInterval(id)
+        onDoneRef.current?.()
+      }
     }, 18)
     return () => clearInterval(id)
   }, [text, isNew])
@@ -149,13 +154,14 @@ function TypewriterText({ text, isNew }: { text: string; isNew: boolean }) {
 export default function ChatThread({ messages, loading, isMobile, onSpeaking }: Props) {
   const bottomRef      = useRef<HTMLDivElement>(null)
   const handleSpeaking = useCallback((s: boolean) => onSpeaking?.(s), [onSpeaking])
-  const [seenIds, setSeenIds] = useState<Set<string>>(new Set())
+  const [seenIds,      setSeenIds]      = useState<Set<string>>(new Set())
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  // Mark new assistant messages as seen after first render
+  // Scan line: mark new assistant messages as seen after 2s
   useEffect(() => {
     const newIds = messages
       .filter(m => m.role === 'assistant' && !seenIds.has(m.id))
@@ -163,7 +169,7 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
     if (newIds.length > 0) {
       setTimeout(() => {
         setSeenIds(prev => new Set([...prev, ...newIds]))
-      }, 2000) // keep "new" state for duration of typewriter animation
+      }, 2000)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages])
@@ -245,8 +251,12 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
                 onSpeaking={handleSpeaking}
               />
             )}
-            {m.role === 'assistant' && m.id === latestAssistantId && !seenIds.has(m.id)
-              ? <TypewriterText text={m.content} isNew={true} />
+            {m.role === 'assistant' && m.id === latestAssistantId && !completedIds.has(m.id)
+              ? <TypewriterText
+                  text={m.content}
+                  isNew={true}
+                  onDone={() => setCompletedIds(prev => new Set([...prev, m.id]))}
+                />
               : m.content
             }
           </div>
