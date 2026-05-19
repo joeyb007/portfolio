@@ -18,7 +18,6 @@ export const PROJECTS: ProjectEntry[] = [
       'Scientific knowledge is locked behind papers most people lack the time or skills to read. Scholr uses AI agents to retrieve from 200M+ publications and synthesize a fully-cited answer. You should not need a PhD to access the literature.',
     ],
     github:    'https://github.com/joeyb007/Scholr',
-    liveUrl:   'https://tryscholr.com',
     youtubeId: '7cnHikLhers',
   },
   {

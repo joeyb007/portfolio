@@ -54,7 +54,7 @@ export default function Home() {
       // Build history in the format the backend expects
       const history = messages.map(m => ({ role: m.role, content: m.content }))
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/chat`, {
+      const res = await fetch(`${(process.env.NEXT_PUBLIC_BACKEND_URL ?? '').replace(/\/$/, '')}/chat`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ message: text, history, voice: voiceEnabled }),
@@ -185,7 +185,7 @@ export default function Home() {
             {
               href:     '/resume.pdf',
               label:    'Resume',
-              download: false,
+              download: true,
               icon:     <><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="16" y2="17" /><line x1="8" y1="9" x2="11" y2="9" /></>,
             },
           ].map(({ href, label, download, icon }) => (
