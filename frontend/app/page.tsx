@@ -210,6 +210,45 @@ export default function Home() {
             </a>
           ))}
         </div>
+
+        {/* Waterloo CS Webring — requires joining via PR to github.com/JusGu/uwatering first */}
+        <div style={{
+          display:       'flex',
+          gap:           8,
+          alignItems:    'center',
+          marginTop:     12,
+          pointerEvents: 'auto',
+        }}>
+          <a
+            href="https://cs.uwatering.com/#https://josephbarbosa.com?nav=prev"
+            aria-label="Previous in CS Webring"
+            style={{ color: 'rgba(240,244,255,0.3)', transition: 'color 0.2s', fontSize: 13, lineHeight: 0 }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(125,216,255,0.9)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,244,255,0.3)')}
+          >
+            ←
+          </a>
+          <a
+            href="https://cs.uwatering.com/#https://josephbarbosa.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="CS Webring"
+            style={{ lineHeight: 0, opacity: 0.5, transition: 'opacity 0.2s' }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.5')}
+          >
+            <img src="https://cs.uwatering.com/icon.white.svg" alt="CS Webring" style={{ width: 16, height: 16 }} />
+          </a>
+          <a
+            href="https://cs.uwatering.com/#https://josephbarbosa.com?nav=next"
+            aria-label="Next in CS Webring"
+            style={{ color: 'rgba(240,244,255,0.3)', transition: 'color 0.2s', fontSize: 13, lineHeight: 0 }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(125,216,255,0.9)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,244,255,0.3)')}
+          >
+            →
+          </a>
+        </div>
       </div>
 
       {activeSectionId && (
