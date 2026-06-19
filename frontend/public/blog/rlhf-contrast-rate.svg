@@ -1,0 +1,23 @@
+<svg viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <rect x="0" y="0" width="560" height="380" fill="#0f172a" rx="14"/>
+  <text x="40" y="44" fill="#f1f5f9" font-size="18px" font-weight="700">Contrast rate by rejected-sample source</text>
+  <text x="40" y="66" fill="#94a3b8" font-size="13px">Share of preference pairs where chosen and rejected actually differ</text>
+
+  <!-- baseline -->
+  <line x1="40" y1="300" x2="520" y2="300" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- bar 1: SFT vs SFT 0.86% (shown as a thin nub; true height ~3px would be invisible) -->
+  <rect x="110" y="294" width="120" height="6" fill="#64748b" rx="2"/>
+  <line x1="170" y1="294" x2="170" y2="270" stroke="#475569" stroke-width="1" stroke-dasharray="2 2"/>
+  <text x="170" y="262" fill="#cbd5e1" font-size="20px" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">0.86%</text>
+  <text x="170" y="324" fill="#e2e8f0" font-size="13px" font-weight="600" text-anchor="middle">SFT vs SFT</text>
+  <text x="170" y="342" fill="#94a3b8" font-size="11px" text-anchor="middle">model too good &#8212; no signal</text>
+
+  <!-- bar 2: SFT vs base 59% -->
+  <rect x="330" y="110" width="120" height="190" fill="#f59e0b" rx="4"/>
+  <text x="390" y="100" fill="#fcd34d" font-size="20px" font-weight="700" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">59%</text>
+  <text x="390" y="324" fill="#e2e8f0" font-size="13px" font-weight="600" text-anchor="middle">SFT vs base Llama</text>
+  <text x="390" y="342" fill="#94a3b8" font-size="11px" text-anchor="middle">viable preference set</text>
+
+  <text x="280" y="370" fill="#64748b" font-size="11px" text-anchor="middle">The reference model you sample rejections from decides whether your dataset exists at all.</text>
+</svg>

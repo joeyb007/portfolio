@@ -26,3 +26,26 @@ body {
   display: flex;
   align-items: center;
 }
+
+.blog-bar {
+  background:    rgba(0,220,255,0.04);
+  border:        1px solid rgba(0,220,255,0.18);
+  transition:    background 0.18s ease, border-color 0.18s ease;
+}
+
+.blog-bar:hover {
+  background:    rgba(0,220,255,0.08);
+  border-color:  rgba(0,220,255,0.4);
+}
+
+.mdx-link {
+  color:              rgba(0,220,255,0.85);
+  text-decoration:    underline;
+  text-decoration-color: rgba(0,220,255,0.3);
+  transition:         color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.mdx-link:hover {
+  color:              #fff;
+  text-decoration-color: rgba(0,220,255,0.85);
+}

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, forwardRef } from 'react'
 import { REGION_CONFIGS, type SectionId } from '@/lib/regionMap'
 import { PROJECTS } from '@/lib/projects'
+import { getSortedPosts, formatPostDate } from '@/lib/blog'
 import type { HologramBullet } from '@/lib/regionMap'
 
 function parseBold(text: string): React.ReactNode {
@@ -395,6 +396,46 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                 </div>
               </div>
               </>
+            ) : displayed === 'blog' ? (
+              // ── Blog preview: 3 most recent posts ──────────────────────────
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, pointerEvents: 'auto' }}>
+                {getSortedPosts().slice(0, 3).map((post) => (
+                  <a
+                    key={post.slug}
+                    href={`/blog/${post.slug}`}
+                    style={{
+                      textDecoration: 'none', display: 'block', padding: '8px 10px', borderRadius: 6,
+                      background: 'rgba(0,220,255,0.04)', border: '1px solid rgba(0,220,255,0.18)',
+                      transition: 'background 0.18s ease, border-color 0.18s ease',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(0,220,255,0.08)'
+                      e.currentTarget.style.borderColor = 'rgba(0,220,255,0.4)'
+                      ;(e.currentTarget.querySelectorAll('p')[1] as HTMLElement).style.color = '#fff'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'rgba(0,220,255,0.04)'
+                      e.currentTarget.style.borderColor = 'rgba(0,220,255,0.18)'
+                      ;(e.currentTarget.querySelectorAll('p')[1] as HTMLElement).style.color = 'rgba(0,220,255,0.85)'
+                    }}
+                  >
+                    <p style={{ ...mono, color: 'rgba(0,220,255,0.4)', fontSize: 7.5, margin: '0 0 2px' }}>
+                      {formatPostDate(post.date, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </p>
+                    <p style={{ color: 'rgba(0,220,255,0.85)', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4, margin: 0, transition: 'color 0.15s' }}>
+                      {post.title}
+                    </p>
+                  </a>
+                ))}
+                <a
+                  href="/blog"
+                  style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', marginTop: 4 }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}
+                >
+                  View all posts ↗
+                </a>
+              </div>
             ) : (
               // ── Content: paragraphs + category blocks ─────────────────────
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

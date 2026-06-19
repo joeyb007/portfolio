@@ -1,0 +1,78 @@
+<svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#10b981"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#f59e0b"/>
+    </marker>
+    <style>
+      .t{fill:#f1f5f9;font-size:15px;font-weight:600;}
+      .s{fill:#cbd5e1;font-size:11.5px;}
+      .lab{fill:#94a3b8;font-size:11px;font-style:italic;}
+      .num{fill:#fcd34d;font-size:11.5px;font-weight:700;font-family:ui-monospace,Menlo,monospace;}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="420" fill="#0f172a" rx="14"/>
+  <text x="32" y="30" fill="#64748b" font-size="12px" font-weight="600" letter-spacing="0.07em">PIPELINE&#8201;&#8201;&#183;&#8201;&#8201;TWO GENERATORS &#8594; SCORE &#8594; FILTER &#8594; DPO</text>
+
+  <rect x="32" y="180" width="150" height="58" rx="10" fill="#0f3d3e" stroke="#155e63" stroke-width="1.5"/>
+  <text class="t" x="107" y="206" text-anchor="middle">RecipeNLG Dataset</text>
+  <text class="s" x="107" y="224" text-anchor="middle">8K compliant prompts</text>
+
+  <!-- SFT generator -->
+  <rect x="232" y="90" width="170" height="66" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text class="t" x="317" y="116" text-anchor="middle">SFT: Llama 3.2 3B</text>
+  <text class="s" x="317" y="133" text-anchor="middle">+ QLoRA</text>
+  <text class="s" x="317" y="148" text-anchor="middle" fill="#6ee7b7">generates chosen</text>
+
+  <!-- Base generator -->
+  <rect x="232" y="262" width="170" height="66" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text class="t" x="317" y="288" text-anchor="middle">Base Llama 3.2 3B</text>
+  <text class="s" x="317" y="305" text-anchor="middle">untuned</text>
+  <text class="s" x="317" y="320" text-anchor="middle" fill="#fcd34d">generates rejected</text>
+
+  <!-- XGBoost scorer -->
+  <rect x="455" y="176" width="170" height="66" rx="10" fill="#3b2f1e" stroke="#92590b" stroke-width="1.5"/>
+  <text class="t" x="540" y="202" text-anchor="middle">XGBoost scorer</text>
+  <text class="s" x="540" y="219" text-anchor="middle">18 per-constraint</text>
+  <text class="s" x="540" y="234" text-anchor="middle">classifiers</text>
+
+  <!-- Filter -->
+  <rect x="678" y="176" width="170" height="66" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+  <text class="t" x="763" y="198" text-anchor="middle">Filter</text>
+  <text class="s" x="763" y="216" text-anchor="middle">keep iff SFT passes</text>
+  <text class="s" x="763" y="231" text-anchor="middle">&#8743; base fails</text>
+
+  <!-- pairs + DPO + policy column on right -->
+  <rect x="678" y="290" width="170" height="58" rx="10" fill="#0f3d3e" stroke="#155e63" stroke-width="1.5"/>
+  <text class="t" x="763" y="314" text-anchor="middle">~1,200 pairs</text>
+  <text class="num" x="763" y="332" text-anchor="middle">59% contrast</text>
+
+  <rect x="455" y="290" width="170" height="58" rx="10" fill="#7c2d12" stroke="#f59e0b" stroke-width="2"/>
+  <text class="t" x="540" y="314" text-anchor="middle">DPO</text>
+  <text class="s" x="540" y="332" text-anchor="middle">&#8594; aligned checkpoint</text>
+
+  <!-- arrows: food -> both generators -->
+  <path d="M182,200 C205,200 210,140 228,128" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M182,218 C205,218 210,285 228,295" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- both generators -> scorer (independent) -->
+  <path d="M402,128 C430,128 440,180 452,196" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#arrowGreen)"/>
+  <path d="M402,295 C430,295 440,250 452,224" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrowAmber)"/>
+
+  <!-- scorer -> filter -->
+  <line x1="625" y1="209" x2="674" y2="209" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- filter -> pairs -->
+  <path d="M763,242 L763,286" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- pairs -> DPO -->
+  <line x1="678" y1="319" x2="629" y2="319" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <text x="32" y="402" fill="#64748b" font-size="11px">The filter is the trick: most pairs are discarded; only clean SFT-pass / base-fail pairs survive into DPO.</text>
+</svg>
