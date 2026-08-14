@@ -77,14 +77,18 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
         category: 'currently',
         items: [
           {
-            logo: 'Scotiabank.png', text: 'Scotiabank',
-            desc: 'Leading an agentic QA initiative on the CBE banking platform, building an LLM agent for regression tests from code diffs in CI/CD',
+            logo: 'waterloo.png', text: 'University of Waterloo',
+            desc: 'Undergraduate Research Assistant: evaluating ASR models on 380 hours of code-switched Kazakh–Russian medical transcripts to make AI clinical documentation more robust',
           },
         ],
       },
       {
         category: 'previously',
         items: [
+          {
+            logo: 'Scotiabank.png', text: 'Scotiabank',
+            desc: 'Built Flowpilot, a VLM-powered ReAct agent that automates live UI testing on the consumer banking platform',
+          },
           {
             logo: 'ESGTree.png', text: 'ESGTree',
             desc: 'Pioneered a NL-to-SQL agent with Python codegen for data analysis and trend projection',

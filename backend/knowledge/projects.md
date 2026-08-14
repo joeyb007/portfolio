@@ -34,20 +34,22 @@ General-purpose LLMs hallucinate recipes that violate dietary restrictions — t
 
 ---
 
-## Studeal — Agentic Deal Hunter for Students
-**GitHub: github.com/joeyb007/Studeal**
+## Studeal — Deal-Hunting Agent for Secondhand Marketplaces
+**GitHub: github.com/joeyb007/Studeal** · **Live: studeal.site**
 
-Canadian students overpay for tech because no tool actively hunts deals for them. Studeal does it autonomously.
+Buying secondhand means weeks of open tabs and texting the one friend who knows what things are worth. Studeal replaces that friend with an agent, built for P2P marketplaces (Facebook Marketplace, Kijiji, eBay) where there are no APIs, no catalogs, and no structured feeds: the segment retail-focused agentic commerce (ACP, UCP) doesn't touch.
 
-Tell Studeal what you need and it deploys a background agent that hunts deals across the web, scores them by relevance, and sends you alerts. No manual searching required.
+Tell Scout, the conversational persona, what you're after and it elicits a typed spec through casual dialogue (an LLM-driven state machine over a re-injected JSON context). A fleet of browser agents then sweeps 10 marketplaces in parallel, and you get back your best matches, what each is worth, and exactly what to offer.
 
 **How it works:**
-- Multi-agent pipeline (LangGraph) that searches, extracts, scores, and deduplicates deals using semantic similarity
-- Concurrent hunts across sources via asyncio with semaphore-bounded parallelism
-- Conversational agent that progressively extracts user intent through natural dialogue, then deploys a persistent background worker
-- Full-stack: auth, Stripe billing, email digests, RAG-powered market context scoring, Sentry monitoring, rate limiting, pgvector-indexed semantic search
+- Browser agents drive Chrome over CDP, reading each page as a serialized accessibility/DOM tree, so the same loop works on every marketplace with zero site-specific scrapers
+- Producer-consumer split: the navigator only covers pages, snapshotting each onto a queue; parallel extractor workers with fresh context pull structured listings via overlapped chunking. Versus a single-agent ReAct baseline: 2.7× the unique listings, 2.7× faster, 40% cheaper
+- Listings fuse title text with the seller's photo into 1024-d multimodal embeddings, so a "Callaway Left Hand Driver (NEW)" whose title never says "golf" still embeds as golf clubs
+- Recommendations run SQL prefilter → pgvector cosine shortlist → listwise LLM ranker, all precomputed so the read path serves in ~50ms
+- Ask Scout: grounded chat over any listing (even a pasted URL), with price verdicts backed by percentiles over comparable listings from the shared pool: what to offer, what's fair, when to walk away
+- Deterministic code owns every agent exit (stall detection, page-dry heuristics, hard deadlines, spend caps); the model proposes actions but can never choose to run forever
 
-**Stack:** LangGraph, FastAPI, pgvector, OpenAI embeddings, Celery + Redis, Next.js 15, PostgreSQL, Brave Search API, Stripe
+**Stack:** FastAPI, Celery + Redis, PostgreSQL + pgvector, AWS Bedrock (Claude Sonnet/Haiku, Titan multimodal embeddings), CDP browser agents via Browserbase, Next.js, Stripe, Resend
 
 ---
 

@@ -1,9 +1,14 @@
 # Work Experience
 
+## University of Waterloo — Undergraduate Research Assistant (Aug 2026 – Present)
+**Waterloo, ON**
+
+I'm currently doing research on ASR (automatic speech recognition) for clinical documentation. I evaluate ASR models on a 380-hour corpus of code-switched Kazakh–Russian medical transcripts, analyzing how transcription errors emerge when speakers switch languages mid-sentence, and using those error patterns to improve the robustness of AI-assisted clinical documentation models.
+
 ## Scotiabank — Software Engineering Intern (May 2026 – Aug 2026)
 **Consumer Banking Engineering, Toronto**
 
-I'm currently a full-stack software engineer on the CBE (Consumer Banking Engineering) production platform, working with React, Spring Boot, and Docker. I'm leading an agentic AI QA initiative — building an LLM agent that analyzes code diffs and automatically generates targeted regression tests, injected directly into the CI/CD pipeline. This is the first AI-powered testing initiative of its kind on the team.
+Full-stack software engineer on the Consumer Banking Engineering production platform, working with React, Spring Boot, and Docker. I built Flowpilot, a VLM-powered ReAct QA agent that automates live UI testing by grounding its actions in what it sees on screen, cutting manual QA time across the platform's services. It was the first AI-powered testing initiative of its kind on the team.
 
 ## ESGTree — Software Engineering Intern (Dec 2025 – Apr 2026)
 **Waterloo, ON**
@@ -23,4 +28,4 @@ I implemented a full ML training and evaluation pipeline using train-test split,
 
 ## Summary
 
-I've completed 3 internships across AI, full-stack, and product. Each role involved building something new rather than maintaining existing systems — I gravitate toward greenfield work and owning initiatives end-to-end.
+I've completed 3 internships across AI, full-stack, and product, and I'm currently doing ASR research at the University of Waterloo. Each role involved building something new rather than maintaining existing systems — I gravitate toward greenfield work and owning initiatives end-to-end.

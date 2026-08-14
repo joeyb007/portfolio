@@ -80,7 +80,7 @@ export const about: AboutContent = {
     "I'm drawn to problems where the AI layer is load-bearing: where getting the system right is the product. Real innovation lives in building.",
   ],
   currently: [
-    { prefix: 'Working at', entity: 'Scotiabank', suffix: ' as a Software Engineer Intern', sectionId: 'experience' },
+    { prefix: 'Researching at', entity: 'University of Waterloo', suffix: ' as an Undergraduate Research Assistant', sectionId: 'experience' },
     { prefix: 'Building', entity: 'Studeal', suffix: ', an agentic AI platform that helps students save money' },
     { prefix: 'Seeking', entity: 'Winter 2027 Internships', suffix: '' },
   ],
@@ -103,14 +103,26 @@ export const about: AboutContent = {
 // ---------------------------------------------------------------------------
 export const experience: ExperienceEntry[] = [
   {
+    company:     'University of Waterloo',
+    role:        'Undergraduate Research Assistant',
+    period:      'Aug 2026 – Present',
+    location:    'Waterloo, Canada',
+    bullets: [
+      'Evaluating ASR (speech-to-text) models on a 380-hour corpus of code-switched Kazakh–Russian medical transcripts',
+      'Digging into how transcription breaks when speakers switch languages mid-sentence, and using those error patterns to make AI-assisted clinical documentation models more robust',
+    ],
+    tags: ['ASR', 'Model Evaluation', 'NLP', 'Healthcare AI'],
+    logo: '/logos/waterloo.png'
+  },
+  {
     company:     'Scotiabank',
     role:        'Software Engineer Intern',
     period:      'May 2026 – Aug 2026',
     location:    'Toronto, Canada',
     bullets: [
-      'Current Full-Stack SWE intern on the Consumer Banking Team; actively seeking Agentic-AI adjacent initiatives',
+      'Built Flowpilot, a VLM-powered ReAct agent that automates live UI testing by looking at the screen like a human tester, cutting manual QA time across the consumer banking platform',
     ],
-    tags: ['Java', 'SpringBoot', 'React.js'],
+    tags: ['VLM Agents', 'ReAct', 'Java', 'SpringBoot', 'React.js'],
     logo: '/logos/Scotiabank.png'
   },
   {

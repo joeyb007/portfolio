@@ -438,7 +438,15 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
               </div>
             ) : (
               // ── Content: paragraphs + category blocks ─────────────────────
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              // Scrolls when a section's content exceeds the card's fixed height;
+              // pointerEvents must be re-enabled here since the wrapper disables them.
+              <div style={{
+                display: 'flex', flexDirection: 'column', gap: 8,
+                flex: 1, minHeight: 0, overflowY: 'auto',
+                pointerEvents: 'auto',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(0,220,255,0.25) transparent',
+              }}>
                 {cfg.hologramBullets.map((item: HologramBullet, i: number) =>
                   typeof item === 'string' ? (
                     <p key={i} style={{ color: 'rgba(200,240,255,0.72)', fontSize: 10.5,

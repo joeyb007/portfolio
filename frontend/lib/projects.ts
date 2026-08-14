@@ -33,12 +33,15 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     name:    'Studeal',
-    tagline: 'Students overpay for tech because no tool actively hunts deals for them. Studeal does it autonomously.',
-    stack:   ['LangGraph', 'FastAPI', 'pgvector', 'OpenAI embeddings', 'Celery + Redis', 'Next.js 15', 'PostgreSQL', 'Brave Search API', 'Stripe'],
+    tagline: 'Secondhand marketplaces have no APIs, no catalogs, no rails. Studeal hunts deals on them anyway.',
+    stack:   ['FastAPI', 'Celery + Redis', 'PostgreSQL', 'pgvector', 'AWS Bedrock', 'Multimodal embeddings', 'CDP browser agents', 'Browserbase', 'Next.js', 'Stripe', 'Resend'],
     bullets: [
-      'Tell Studeal what you need and it deploys a background agent that hunts deals across the web, scores them by relevance, and sends you alerts. Includes a conversational onboarding agent, Stripe billing, email digests, and pgvector-powered semantic search.',
+      'Describe what you want in plain English and Scout, the conversational agent, turns it into a typed spec. A fleet of browser agents then sweeps 10 P2P marketplaces in parallel, reading each page through its accessibility tree, so one loop works on every site with zero site-specific scrapers.',
+      'Listings fuse title text with the seller\'s photo into multimodal embeddings, then a three-stage pipeline (SQL prefilter → pgvector shortlist → listwise LLM ranker) serves precomputed picks in ~50ms.',
+      'Ask Scout grounds every price verdict in live comps from the shared listing pool: what to offer, what\'s fair, and when to walk away.',
     ],
-    github: 'https://github.com/joeyb007/Studeal',
+    github:  'https://github.com/joeyb007/Studeal',
+    liveUrl: 'https://studeal.site',
   },
   {
     name:    'From Scratch',
