@@ -1,0 +1,116 @@
+import ArtifactEmbed from '@/components/blog/ArtifactEmbed'
+
+## The "Buddy Loop"
+
+A few months ago I picked up the most expensive hobby known to man (golf) as a broke university student. The rite of passage for any new golfer is the infamous Facebook Marketplace loop: weeks of researching deals, 25 open "is this still available?" tabs, screenshotting sets to that one friend who knows what clubs are actually worth. Every student on a budget knows this loop, on every secondhand (P2P) marketplace.
+
+So, I built an agent replicating that "buddy" with [Studeal](https://studeal.site). What I figured would be a weekend project turned into four months of ideation, iteration, and polishing. While agentic commerce has seen a recent surge, nearly all of it is built for retail: OpenAI and Stripe's ACP, Google and Shopify's UCP, checkout inside ChatGPT and Gemini, all sitting atop clean catalogs and prebuilt APIs. No one on Facebook Marketplace is publishing a structured product feed. Secondhand proved to be a much messier problem. The idea was simple: tell an agent what you want in plain English, and a fleet of subagents sweeps marketplaces, finds your best match, and tells you exactly what to pay.
+
+## What Studeal Is
+
+Studeal is a deal-hunting agent for secondhand marketplaces. You describe what you're after in a short conversation, and Scout (the product's persona) turns it into a typed spec. From there, a fleet of browser agents sweeps 10 marketplaces in parallel. Everything they find is ranked against your preferences and live market prices, and you get back your best matches, what each is worth, and what to offer. It's live at [studeal.site](https://studeal.site).
+
+<ArtifactEmbed name="architecture" />
+
+## Third Time's the Charm: Studeal's 3 Architectural "Arcs"
+
+Admittedly, building this project came in three distinct "arcs," each of which changed the way I think as an engineer. Studeal v1 wasn't an agent at all, but rather an aggregator. It scraped Slickdeals and RSS and scored with an LLM against a watchlist. It had the look of a real product (auth, Stripe, a landing page). However, underneath, scraped feeds were too shallow and stale to provide real value to the end user.
+
+v2 introduced an autonomous ReAct orchestrator over Google Shopping search APIs. I also went on an ML side quest, generating synthetic training data via OpenAI's batch API to train a gradient boosted deal scorer, which I eventually unshipped. The model was more complex than deterministic scoring, yet less accurate. The same happened for the Cohere reranker I built for deal recommendation in this iteration: demoted to a baseline the eval harness now runs against.
+
+The root cause issue was the same in v2 as in v1: the quality of data was undifferentiated. Any modern LLM app uses Google search. My application added complexity with zero moat. I learned the hard way that in AI engineering, quality data is the moat. It is a prerequisite to a strong solution. Having realized this, I entered v3 by asking myself "what are current LLMs missing," and filling that gap. That gap was P2P: inventory no API can reach, where the only way in is the page itself.
+
+Through all three phases, a design philosophy I maintained that saved me countless hours was building with interfaces first. I swapped LLM and embedding providers three times, but by building an interface for them, suffered little friction in the code changes. Interfaces are effectively free insurance against being wrong.
+
+## Conversation as an LLM-Driven State Machine
+
+A prerequisite to finding someone a deal is knowing what they're looking for. Classical recommendation systems taught in virtually every introductory ML course learn this from behavior: fit a user vector from past clicks and purchases. However, Studeal faces a cold-start problem: a new user has neither. The kicker: every user of a deal-hunting agent is brand-new at the exact moment they most need it to work. So instead of fitting the user vector, Studeal elicits it using an LLM-driven state machine that converts conversation into a typed object.
+
+In this instance, the state is a JSON document, containing fields for the product, budget, condition, brands, a buyer profile, a quality bar, a physical brief, and attributes tiered as "must-have" or "nice-to-have". Scout, the conversational persona, holds none of it in its head. The model is stateless; the full context plus a turn counter is re-injected as JSON every turn, and the model's only job is to propose the next transition. In effect, Scout is filling out a survey on the user's behalf through a friendly, casual conversation, a design constraint unlike any I had experienced in prior projects.
+
+<ArtifactEmbed name="conversationFsm" />
+
+At each turn, the LLM evaluates one gate before writing a word: do I know WHAT they're hunting, plus ONE real constraint? Yes closes the conversation immediately. No means react like a friend, then ask the single most valuable question. Comparing baseline prompts surfaced a failure mode I didn't expect: over-asking. An intake-form Scout maximizes per-turn information gain and feels terrible to talk to. The resolution: the conversation doesn't need to be complete, just sufficient. Scout closes early and lets the ranker resolve the rest downstream.
+
+The harder problem is that one elicited fact has to survive four consumers. "I'm left-handed" becomes embedding text, seller vocabulary in search queries, a hard demote in the ranking prompt, and a post-inspection check that buries a right-handed set even when its photos look great. One sentence, four downstream semantics, which is why attributes are tiered as must versus nice from phrasing alone.
+
+And when the LLM extracts a field wrong? Every validator fails in a chosen direction: an invented tier degrades to "nice," an unknown quality bar to null. A hallucinated field can fail to help; it's never allowed to hurt.
+
+At the terminal state, the JSON becomes a vector through one deterministic function: each typed field renders to a natural-language fragment ("Budget around $1200." "Must be: right-handed; complete set."), the fragments join into a single prose paragraph, and that paragraph gets embedded into the same 1024-d space the listings live in. Prose, not key-value, because the embedding model was trained on language: "budget around $1200" lands near "asking $1150 obo," while max_budget=1200.0 lands near nothing a seller ever wrote. A brand-new user has a meaningful preference vector on signup.
+
+## Reading Sites You've Never Seen
+
+Back in the day, before LLMs, site scraping was difficult, flaky, and deterministic. Scraping ten sites meant writing 10 (or more) distinct scripts, just for them to break in a week. Crawling agents have fundamentally changed this thesis. Building Studeal, I was given the opportunity to simply plug in to existing APIs: Firecrawl, Browserbase, browser-use. But what fun is there in that?
+
+In all seriousness, these product offerings shared a fundamental problem that made them infeasible for my product shape: a high ratio of cost to concurrency. Studeal's value proposition hinged on initial volume in the base pool of listings, meaning I would need to run many scrapers across many sites, even for one user. A single hunt fans out to six concurrent browser sessions and still takes ~7 minutes; at hosted-browser pricing, running that continuously for even a small user base doesn't math out. As a fellow broke college student, paying for enterprise-level plans was not feasible, so I built it myself.
+
+I began by building the scraper naively: shoving the entire page HTML into each LLM call. It took one run to realize the issues that this posed with respect to context window sizing and context rot. So, I turned to the literature, and blogs from these companies. The general consensus came from utilizing the Chrome DevTools Protocol (CDP) to view the DOM tree, accessibility tree, or vision. I ablated variations of all three, and ultimately found the same efficacy from an AX/DOM-tree blend as from screenshotted vision, at a fraction of the cost. I have to credit Browserbase and browser-use's developer articles for the approach; their work is what moved agentic browsing from raw DOM parsing to accessibility-tree representations, and they're pushing that frontier still.
+
+With this section came many "hacky" workarounds that come with working on the web. One interesting one was in accessing Facebook Marketplace. Typically, Marketplace is login-gated for bots. However, in poking around with how I accessed the site, I found that by setting a Referer header claiming the visit came from Google Search, I could navigate without an account: 57 page elements served to a cold visit, 562 with the referer.
+
+Workarounds get you onto the sites. Then comes the real (and surprisingly non-trivial) question: what does the agent actually read and do? Every turn, the fused AX/DOM tree serializes into an indented pseudo-tree where anything interactive gets an [id] bracket:
+
+```
+[17]<input type="text" /> "Search Kijiji"
+[43]<a href="..." /> "Next"
+```
+
+<ArtifactEmbed name="axTree" />
+
+The format comes from browser-use's serializer, and it turns browsing into a conversation with a very simple grammar. The LLM emits exactly one JSON action per turn: click 43, type into 17, scroll, or done. Elements are keyed by CDP's `backend_node_id`, which stays stable across snapshots, so an id the model saw is an id the code can actually click. No selectors, no pixels, no site-specific anything. The same loop that searches Kijiji searches eBay, because from the agent's seat, every marketplace is just brackets and text.
+
+So naturally, the extension from here is to click around the site and find the best deals, right? Wrong. This initial architecture led to ultimate failure due to context rot. The phenomenon means that as you approach the size of an LLM's context window, the quality and precision of its responses decrease. In practice, this led to hallucinated inputs or improper storage of seen products. Further, unbounded navigation does not sufficiently reward exploration breadth: say, for example, an agent enters a product page, and proceeds to navigate through similar product recommendations until it has exhausted its turns. The resultant corpus of product offerings is insufficient in diversity and volume.
+
+Solving this problem was time-consuming, and required multiple iterations. The final architecture was that of a producer-consumer LLM pair. The browsing agent never extracts. Rather, its job is coverage, reaching as many pages as possible. Every URL it lands on gets snapshotted and dropped onto a queue, and extraction happens downstream, in parallel, by separate workers with fresh context per call. Not only does this decrease context window size (and subsequently cost) on chained browsing calls and increase accuracy, it also increases the speed at which runs finish, as it enables concurrent extraction and browsing. It's as if you have two friends finding deals for you: one finding all the possible products, the other getting all the details for them, at the same time. The navigator's own memory becomes just the system prompt and the last two snapshots. That's the whole fix: a 20-turn browse session stays coherent because the context never accumulates anything but navigation.
+
+And critically, the model never decides whether to keep running. It proposes actions; deterministic code owns every exit. Four identical page states in a row is a stall, stop. Three consecutive scrolls each adding under 400 characters means the page ran dry, stop. A model that tries to quit early gets its done call rejected and a nudge to keep paginating, unless the reason is a captcha, an auth wall, or genuinely zero results. Hard deadlines cap each lane and the whole hunt, and a hunt that hits its deadline still drains the queue, so everything extracted before the cutoff is kept. An agent that cannot choose to run forever also cannot loop away your compute budget at 3am. In ablation against a naive single-agent ReAct baseline on the same task and model, this architecture returned 2.7× the unique listings, 2.7× faster, at 40% lower cost.
+
+Every snapshot the fleet captures lands on that queue. Reading them turned out to be a whole separate battle.
+
+## Extracting Text Efficiently
+
+With snapshots piling onto the queue, the next problem became extracting accurate product details from them. The problem seemed relatively straightforward: with a marketplace, user spec, and snapshot already in hand, it seemed like all we needed was to plug them into an API call and get back a result. Yet again, this phase threw a curveball.
+
+The first failure was blindness. An eBay results page's accessibility tree runs over 137,000 characters. The first 18,000 are pure noise: nav, filters, footers. My initial fix to this was picking a truncation window by anchor tag density. The reasoning was, in my opinion, quite clever (not to pat myself on the back): listing grids are anchor-dense. However, this strategy confidently selected eBay's price-filter sidebar: a region maximally full of links reading "$20.00 to $105.00" and containing zero listings.
+
+Staring at the real problem, I recognized the shape. A page too big for one window, content that has to survive being split, information straddling arbitrary boundaries: this is exactly why we use overlapped chunks in RAG. Every retrieval pipeline splits documents into overlapping chunks so no fact gets lost on a boundary, and I'd built that before. So I applied the same strategy here: overlapping chunks of the snapshot, each carrying the page head so every call knows what page it's reading, all extracted concurrently, with cross-chunk duplicates costing nothing because persistence dedupes on canonical URL downstream. I verified this intuition against the literature, finding that the scraping world had largely converged on the same answer (Crawl4AI's `apply_chunking` and `overlap_rate` are a good example).
+
+<ArtifactEmbed name="chunking" />
+
+Sizing the chunks, however, was where the RAG analogy broke down. In RAG, chunk size is chosen with two properties in mind: retrieval granularity and context budget. My 9,000-character budget had nothing to do with the context limit; modern context windows are far larger than any page. Instead, I sized it around a quieter failure mode: enumeration. Past a certain input size, a small model doesn't error out or truncate. It just starts skipping items, returning 12 offers from a chunk that contains 20, with total confidence. So I chunked small enough that skipping stopped, overlapped enough that no listing card straddled a boundary. Applying these changes made the same Facebook page move from 13 to 106 listings extracted.
+
+## Embedding the Products
+
+With this, the extraction pipeline leads to structured text. Text, however, is a uniquely unreliable representation of secondhand listings, as there's no naming convention between sellers. Two people can both list "great beginner golf clubs" and mean drastically different things: one is a forgiving 2022 game-improvement set, the other a rusted mixed bag from 2005. "Like new" spans virtually everything, from sealed-in-box to "I only see the scratches in direct sunlight." On retail sites, a SKU pins the product and the condition is "new." On P2P, the title is whatever the seller typed at 2am with a vested interest to sell; the words carry zero relative meaning.
+
+My favorite example came from a real test run: "Callaway Left Hand Driver (NEW)." Nowhere in the title does the word "golf" appear. Embedded as text, that listing sits at cosine distance 0.866 from a "golf clubs" intent vector: effectively unrelated, unretrievable, invisible. And it's exactly the kind of listing a deal hunter exists to find.
+
+The photo, though, doesn't have a vocabulary problem. A picture of a driver is a picture of a driver, and wear shows whether or not the seller mentions it. This is what pushed me from text embeddings to multimodal. Each listing now fuses its text (title, condition, marketplace, location) with its primary photo into a single 1024-dimensional vector, in the same space where the conversation's intent documents live. With the photo fused in, the Callaway moves from 0.866 to 0.411: comfortably retrievable. A golf club whose title never says golf still embeds as golf. (The photos themselves are captured deterministically from the page and joined to listings by URL in code; the LLM never touches an image link, so a wrong photo can't poison a vector.) Sellers write bad titles; they rarely post bad photos.
+
+## From Vectors to Picks
+
+At this point everything is in one embedding space: user intents on one side, multimodal listings on the other. Turning that into recommendations is a three-stage pipeline, and the interesting engineering is in what each stage is allowed to know.
+
+Stage one is SQL prefiltering, imposing hard constraints like listing recency, max budget, and discount rate. These have no semantic interpretation; something is either more or less than $500. Stages two and three proceed with a retrieve-and-rerank IR architecture: stage two is a pgvector cosine shortlist of 150 candidates against the intent vector, and stage three is a listwise LLM ranker, scoring windows of 25 listings for fit to this specific buyer, with a reason per listing that ships to the UI. Somewhat intuitively, stages two and three (the ranker) are never given the user's budget. This is because stage one already prefilters out items beyond budget; everything downstream is about product fit.
+
+This system was initially very slow, and poor for UX: running embeddings and LLM listwise ranking on demand takes real time. To optimize performance, these values were precomputed, moving the work to the consumer side of the extraction queue. This ultimately drove retrieval latency from multiple seconds to under 50ms.
+
+## The Buddy's Final Form
+
+Everything so far ends in a ranked list. But the problem I set out to solve was the buddy himself: knowing when to hold 'em, when to fold 'em, and when to walk away. That final mile, how much to pay, what to verify, how to negotiate, became "Ask Scout."
+
+Ask Scout is a grounded chat over any listing and its market: "any brown ones under $200?", "is this price actually good?", "what should I check before buying?" This is where all the upstream infrastructure pays off at once. The structured extraction, the vision pipeline, the market data: every answer Scout gives is grounded in what the system has actually seen, and the numbers it quotes are percentiles over comparable listings, never model guesses. I eventually extended it beyond hunted listings entirely: paste Scout any marketplace URL, even one it's never seen, and it runs the same workup.
+
+What separates this from a GPT wrapper is the market context accumulated across all users. One hunt returns hundreds of listings, so a hundred users hunting daily aggregates a pool no individual could build: economies of scale, integrated directly into the product. Every recommendation draws on the entire pool, so when you send Scout a listing, it doesn't evaluate it in a vacuum. It compares against everything it has seen recently, reasons about the current market, and tailors the verdict to you. In that sense it became better than the buddy: it doesn't just verify your listing, it checks the marketplace for you, and sometimes finds one better.
+
+The lifecycle completes here. Your best match, its place in the market, what to verify, how to negotiate, and exactly what to pay: "Ready to buy. Offer $150; anywhere under $180 is fair, and walk past $210." Secondhand shopping. Automated.
+
+## What the No-Rails Version Taught Me
+
+Zooming out, nearly every hard problem in this post is a workaround for infrastructure that doesn't yet exist. The browser fleet exists because Facebook and Kijiji don't have an API. The perception layer exists because there's no structured feed. The chunked extraction exists because there's no catalog. The infrastructure layer that ACP and UCP are building for retail commerce, I had to build by hand.
+
+The parts that came easy, surprisingly, were the real signal. Elicited intent, multimodal matching, negotiation grounded in live comps: these worked almost immediately, and they're a glimpse of what agent-native commerce feels like once the plumbing exists.
+
+I firmly believe after working on this project that the next frontier of agentic commerce is P2P. It's the segment where semantics win over determinism, and nuanced understanding is the purchasing and selling moat: an avenue becoming more accessible as models improve along their exponential. Four months ago, I'd screenshot a listing, text the buddy, and wait for "nah, overpriced." Now I paste a link.
+
+Let me call a guy? Nah, build him.

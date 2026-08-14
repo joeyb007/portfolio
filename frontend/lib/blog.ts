@@ -7,6 +7,12 @@ export interface BlogPost {
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    slug:    'let-me-call-a-guy',
+    title:   'Let Me Call a Guy: What I Learned Building Agents for the Messiest Marketplaces on the Internet',
+    date:    '2026-08-14',
+    excerpt: 'Four months building Studeal, a deal-hunting agent for secondhand marketplaces — browser fleets, context rot, multimodal embeddings, and why P2P is the next frontier of agentic commerce.',
+  },
+  {
     slug:    'removing-the-h-from-rlhf',
     title:   'Removing the H from RLHF',
     date:    '2026-06-19',
