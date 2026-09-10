@@ -20,7 +20,7 @@ export interface RecruiterDoc {
 
 /** First sentence: up to the first `.`/`!`/`?` that is followed by whitespace or end of string. */
 export function firstSentence(s: string): string {
-  const m = s.match(/^\s*(.*?[.!?])(?=\s|$)/s)
+  const m = s.match(/^\s*([\s\S]*?[.!?])(?=\s|$)/)
   return (m ? m[1] : s).trim()
 }
 
