@@ -1,6 +1,19 @@
+/* Graphite theme tokens. Every colour on the site maps to one of these by role.
+   JS consumers (canvas 2D, three.js) read --glow via lib/theme.ts. Mermaid
+   needs literal hex; components/Mermaid.tsx mirrors these values. */
 :root {
-  --background: #050a14;
-  --foreground: #f0f4ff;
+  --bg:        #141517;                 /* page background */
+  --surface:   #1b1c1f;                 /* card / bar fills */
+  --surface-2: #222327;                 /* hover fills, dot-grid dots */
+  --line:      #2a2b30;                 /* hairlines, card borders */
+  --line-2:    #383a40;                 /* emphasised borders, corner brackets */
+  --fg:        #ececec;                 /* primary text */
+  --fg-2:      #b9bbc2;                 /* body text */
+  --fg-3:      #858893;                 /* mono labels, captions */
+  --fg-4:      #5a5d66;                 /* disabled, bullet glyphs */
+  --accent:    #d9dbe0;                 /* links, active states, icon hover */
+  --glow:      #c9ccd4;                 /* brain glow, hologram uColor, region colour */
+  --glow-soft: rgba(201,204,212,0.35);  /* text-shadow glows, scan-line tints */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,8 +29,8 @@ html, body {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
@@ -28,24 +41,24 @@ body {
 }
 
 .blog-bar {
-  background:    rgba(0,220,255,0.04);
-  border:        1px solid rgba(0,220,255,0.18);
+  background:    var(--surface);
+  border:        1px solid var(--line);
   transition:    background 0.18s ease, border-color 0.18s ease;
 }
 
 .blog-bar:hover {
-  background:    rgba(0,220,255,0.08);
-  border-color:  rgba(0,220,255,0.4);
+  background:    var(--surface-2);
+  border-color:  var(--line-2);
 }
 
 .mdx-link {
-  color:              rgba(0,220,255,0.85);
+  color:              var(--accent);
   text-decoration:    underline;
-  text-decoration-color: rgba(0,220,255,0.3);
+  text-decoration-color: var(--line-2);
   transition:         color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
 .mdx-link:hover {
-  color:              #fff;
-  text-decoration-color: rgba(0,220,255,0.85);
+  color:              var(--fg);
+  text-decoration-color: var(--accent);
 }

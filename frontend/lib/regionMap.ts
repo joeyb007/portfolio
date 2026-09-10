@@ -44,7 +44,7 @@ export const CONTENT_SECTIONS: SectionId[] = [
 
 export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
   about: {
-    sectionId: 'about', label: 'About', color: '#7dd8ff',
+    sectionId: 'about', label: 'About', color: '#c9ccd4',
     lobe:         'Frontal Lobe',
     lobeFunction: 'The seat of identity and personality.',
     sectionDesc:  'Who I am, what drives me, and my perspective.',
@@ -68,7 +68,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     ],
   },
   experience: {
-    sectionId: 'experience', label: 'Experience', color: '#7dd8ff',
+    sectionId: 'experience', label: 'Experience', color: '#c9ccd4',
     lobe:         'Temporal Lobe',
     lobeFunction: 'Memory and pattern recognition.',
     sectionDesc:  "Roles, teams, and the problems I've worked on.",
@@ -103,7 +103,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     ],
   },
   projects: {
-    sectionId: 'projects', label: 'Projects', color: '#7dd8ff',
+    sectionId: 'projects', label: 'Projects', color: '#c9ccd4',
     lobe:          'Parietal Lobe',
     lobeFunction:  'Spatial reasoning and problem-solving.',
     sectionDesc:   "Things I've built and shipped.",
@@ -115,7 +115,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     ],
   },
   blog: {
-    sectionId: 'blog', label: 'Blog', color: '#7dd8ff',
+    sectionId: 'blog', label: 'Blog', color: '#c9ccd4',
     lobe:          'Occipital Lobe',
     lobeFunction:  'Processing and output.',
     sectionDesc:   "Technical and personal writing.",
@@ -124,7 +124,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     ],
   },
   personal: {
-    sectionId: 'personal', label: 'Personal', color: '#7dd8ff',
+    sectionId: 'personal', label: 'Personal', color: '#c9ccd4',
     lobe:          'Limbic System',
     lobeFunction:  'Emotion and motivation.',
     sectionDesc:   'Fitness, cooking, and life outside the terminal.',
@@ -149,7 +149,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
     ],
   },
   contact: {
-    sectionId: 'contact', label: 'Contact', color: '#7dd8ff',
+    sectionId: 'contact', label: 'Contact', color: '#c9ccd4',
     lobe:          'Cerebellum',
     lobeFunction:  'Coordination and reach.',
     sectionDesc:   "Let's connect, collaborate, or just talk.",
