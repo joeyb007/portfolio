@@ -9,7 +9,7 @@ import { getSortedPosts } from './blog'
 
 export interface DocLink   { label: string; href: string }
 export interface DocEntity { strong: string; href?: string; logo?: string }   // a bold, underlined proper noun, optionally with an emblem
-export interface DocItem   extends Partial<DocEntity> { text: string; note?: string }
+export interface DocItem   extends Partial<DocEntity> { text: string; note?: string; links?: DocLink[] }   // links: trailing mono links, e.g. github · site
 export interface DocGroup  { label: string; marker: '◆' | '■'; items: DocItem[] }
 export type PitchSegment = string | DocEntity
 export interface RecruiterDoc {
@@ -22,13 +22,6 @@ export interface RecruiterDoc {
 export function firstSentence(s: string): string {
   const m = s.match(/^\s*([\s\S]*?[.!?])(?=\s|$)/)
   return (m ? m[1] : s).trim()
-}
-
-/** "live" when deployed, else a user count if the tagline states one. */
-export function deriveNote(p: { liveUrl?: string; tagline: string }): string | undefined {
-  if (p.liveUrl) return 'live'
-  const users = p.tagline.match(/(\d[\d,]*\+?)\s+users/i)
-  return users ? `${users[1]} users` : undefined
 }
 
 const currently: DocGroup = {
@@ -49,7 +42,10 @@ const projects: DocGroup = {
     strong: p.name,
     text:   firstSentence(p.tagline),
     href:   p.liveUrl ?? p.github,
-    note:   deriveNote(p),
+    links:  [
+      ...(p.github  ? [{ label: 'github', href: p.github  }] : []),
+      ...(p.liveUrl ? [{ label: 'site',   href: p.liveUrl }] : []),
+    ],
   })),
 }
 

@@ -81,6 +81,22 @@ function Item({ item, glyph, glyphColor, indent }: {
             {item.note}
           </span>
         )}
+        {item.links?.map((l, i) => (
+          <span key={l.label}>
+            {i === 0 ? ' ' : <span style={{ color: 'var(--fg-4)', margin: '0 4px' }}>·</span>}
+            <a
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ ...mono, color: 'var(--fg-3)', fontSize: 9.5, letterSpacing: '0.08em',
+                textTransform: 'uppercase', textDecoration: 'none', marginLeft: i === 0 ? 4 : 0 }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
+            >
+              {l.label} ↗
+            </a>
+          </span>
+        ))}
       </span>
     </li>
   )

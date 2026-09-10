@@ -1,4 +1,4 @@
-import { RECRUITER, firstSentence, deriveNote } from '../recruiter'
+import { RECRUITER, firstSentence } from '../recruiter'
 import { PROJECTS } from '../projects'
 import { BLOG_POSTS } from '../blog'
 
@@ -15,6 +15,8 @@ describe('RECRUITER completeness', () => {
       expect(item!.href).toBe(p.liveUrl ?? p.github)
       expect(item!.text.length).toBeGreaterThan(0)
       expect(item!.text).not.toContain('\n')
+      expect(item!.note).toBeUndefined()
+      expect(item!.links!.map(l => l.label)).toEqual([...(p.github ? ['github'] : []), ...(p.liveUrl ? ['site'] : [])])
       expect(allText()).toContain(p.name)
     }
     expect(building.items).toHaveLength(PROJECTS.length)
@@ -75,16 +77,3 @@ describe('firstSentence', () => {
   })
 })
 
-describe('deriveNote', () => {
-  it('prefers live, then a users count from the tagline', () => {
-    expect(deriveNote({ liveUrl: 'https://x', tagline: '300+ users' })).toBe('live')
-    expect(deriveNote({ tagline: 'Foo.\n300+ users and counting.' })).toBe('300+ users')
-    expect(deriveNote({ tagline: '1,200 users' })).toBe('1,200 users')
-    expect(deriveNote({ tagline: 'nothing here' })).toBeUndefined()
-  })
-  it('gives Scholr a users note and Studeal a live note', () => {
-    const items = RECRUITER.groups[2].items
-    expect(items.find(i => i.strong === 'Scholr')!.note).toBe('300+ users')
-    expect(items.find(i => i.strong === 'Studeal')!.note).toBe('live')
-  })
-})
