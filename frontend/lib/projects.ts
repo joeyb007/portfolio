@@ -1,6 +1,7 @@
 export interface ProjectEntry {
   name:        string
   tagline:     string
+  blurb?:      string   // one polished clause for tight listings (recruiter doc); falls back to the tagline's first sentence
   stack:       string[]
   bullets:     string[]
   github?:     string
@@ -23,6 +24,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     name:    'PantryPal',
     tagline: 'ChatGPT kept breaking my diet with hallucinated recipes. So I fine-tuned a model that actually gets it.',
+  blurb:   'Preference-tuned Llama 3.2, replacing human labelers with domain-specific weak classifiers.',
     stack:   ['Llama 3.2 3B', 'QLoRA', 'DPO', 'unsloth', 'trl', 'XGBoost', 'TF-IDF', 'FastAPI', 'HuggingFace Transformers'],
     bullets: [
       'Fine-tuned Llama 3.2 3B to stop hallucinating meals that break dietary restrictions. Used QLoRA for efficient training and DPO with XGBoost classifiers as an automated reward signal, removing the need for human preference labeling entirely.',
@@ -34,6 +36,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     name:    'Studeal',
     tagline: 'Secondhand marketplaces have no APIs, no catalogs, no rails. Studeal hunts deals on them anyway.',
+  blurb:   'Agentic commerce for secondhand marketplaces.',
     stack:   ['FastAPI', 'Celery + Redis', 'PostgreSQL', 'pgvector', 'AWS Bedrock', 'Multimodal embeddings', 'CDP browser agents', 'Browserbase', 'Next.js', 'Stripe', 'Resend'],
     bullets: [
       'Describe what you want in plain English and Scout, the conversational agent, turns it into a typed spec. A fleet of browser agents then sweeps 10 P2P marketplaces in parallel, reading each page through its accessibility tree, so one loop works on every site with zero site-specific scrapers.',

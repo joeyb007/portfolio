@@ -13,7 +13,7 @@ describe('RECRUITER completeness', () => {
       const item = building.items.find(i => i.strong === p.name)
       expect(item).toBeDefined()
       expect(item!.href).toBe(p.liveUrl ?? p.github)
-      expect(item!.text.length).toBeGreaterThan(0)
+      expect(item!.text).toBe(p.blurb ?? firstSentence(p.tagline))
       expect(item!.text).not.toContain('\n')
       expect(item!.note).toBeUndefined()
       expect(item!.links!.map(l => l.label)).toEqual([...(p.github ? ['github'] : []), ...(p.liveUrl ? ['site'] : [])])

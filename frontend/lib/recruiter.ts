@@ -40,7 +40,7 @@ const projects: DocGroup = {
   marker: '■',
   items:  PROJECTS.map(p => ({
     strong: p.name,
-    text:   firstSentence(p.tagline),
+    text:   p.blurb ?? firstSentence(p.tagline),
     href:   p.liveUrl ?? p.github,
     links:  [
       ...(p.github  ? [{ label: 'github', href: p.github  }] : []),
