@@ -28,6 +28,14 @@ html, body {
   overflow-x: hidden;
 }
 
+/* Paint the root as well as the body so scrollbar gutters, overscroll, and
+   zoomed layouts never expose the browser's default canvas at the edges. */
+html {
+  background: var(--bg);
+  color-scheme: dark;
+  min-height: 100%;
+}
+
 body {
   background: var(--bg);
   color: var(--fg);

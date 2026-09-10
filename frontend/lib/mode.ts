@@ -4,13 +4,12 @@
 // helpers are the only side-effecting exports.
 // ---------------------------------------------------------------------------
 
-export type Mode      = 'revealing' | 'choosing' | 'animated' | 'minimalistic'
+export type Mode      = 'revealing' | 'animated' | 'minimalistic'
 export type SavedMode = 'animated' | 'minimalistic'
 
 export type ModeAction =
   | { type: 'INIT'; saved: SavedMode | null; isMobile: boolean }   // seed after mount (URL/storage/viewport are client-only)
   | { type: 'REVEAL_DONE' }
-  | { type: 'PICK'; mode: SavedMode }
   | { type: 'TOGGLE' }
   | { type: 'SET_MOBILE'; isMobile: boolean }
 
@@ -37,10 +36,12 @@ export function initialModeState(saved: SavedMode | null, isMobile: boolean): Mo
   return { mode: 'revealing', saved, isMobile }
 }
 
+export const DEFAULT_MODE: SavedMode = 'minimalistic'   // first-time visitors land here after the reveal
+
 /** The mode a non-revealing page should show given what is saved and the viewport. */
 function settledMode(saved: SavedMode | null, isMobile: boolean): Mode {
   if (isMobile) return 'minimalistic'
-  return saved ?? 'choosing'
+  return saved ?? DEFAULT_MODE
 }
 
 export function modeReducer(state: ModeState, action: ModeAction): ModeState {
@@ -53,13 +54,9 @@ export function modeReducer(state: ModeState, action: ModeAction): ModeState {
       if (state.mode !== 'revealing') return state
       return { ...state, mode: settledMode(state.saved, state.isMobile) }
 
-    case 'PICK':
-      if (state.mode !== 'choosing') return state
-      return { ...state, mode: action.mode, saved: action.mode }
-
     case 'TOGGLE': {
       if (state.isMobile) return state
-      if (state.mode !== 'animated' && state.mode !== 'minimalistic') return state
+      if (state.mode === 'revealing') return state
       const next: SavedMode = state.mode === 'animated' ? 'minimalistic' : 'animated'
       return { ...state, mode: next, saved: next }
     }

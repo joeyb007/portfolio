@@ -5,6 +5,7 @@ import {
   saveMode,
   parseMode,
   initialModeState,
+  DEFAULT_MODE,
   MODE_STORAGE_KEY,
   type ModeState,
 } from '../mode'
@@ -20,7 +21,6 @@ describe('parseMode', () => {
   })
   it('rejects everything else', () => {
     expect(parseMode('revealing')).toBeNull()
-    expect(parseMode('choosing')).toBeNull()
     expect(parseMode('')).toBeNull()
     expect(parseMode(null)).toBeNull()
     expect(parseMode(undefined)).toBeNull()
@@ -73,8 +73,9 @@ describe('modeReducer — transition table', () => {
     expect(modeReducer(desktop({ saved: 'minimalistic' }), { type: 'REVEAL_DONE' }).mode).toBe('minimalistic')
   })
 
-  it('revealing + REVEAL_DONE with nothing saved -> choosing', () => {
-    expect(modeReducer(desktop(), { type: 'REVEAL_DONE' }).mode).toBe('choosing')
+  it('revealing + REVEAL_DONE with nothing saved -> the default (minimalistic), not saved', () => {
+    expect(modeReducer(desktop(), { type: 'REVEAL_DONE' })).toEqual({ mode: DEFAULT_MODE, saved: null, isMobile: false })
+    expect(DEFAULT_MODE).toBe('minimalistic')
   })
 
   it('revealing + REVEAL_DONE on mobile -> minimalistic, regardless of saved', () => {
@@ -88,23 +89,6 @@ describe('modeReducer — transition table', () => {
     expect(modeReducer(s, { type: 'REVEAL_DONE' })).toBe(s)
   })
 
-  it('choosing + PICK minimalistic -> minimalistic (saved)', () => {
-    const s = modeReducer(desktop({ mode: 'choosing' }), { type: 'PICK', mode: 'minimalistic' })
-    expect(s).toEqual({ mode: 'minimalistic', saved: 'minimalistic', isMobile: false })
-  })
-
-  it('choosing + PICK animated -> animated (saved)', () => {
-    const s = modeReducer(desktop({ mode: 'choosing' }), { type: 'PICK', mode: 'animated' })
-    expect(s).toEqual({ mode: 'animated', saved: 'animated', isMobile: false })
-  })
-
-  it('PICK outside choosing is a no-op', () => {
-    const rev = desktop()
-    expect(modeReducer(rev, { type: 'PICK', mode: 'animated' })).toBe(rev)
-    const anim = desktop({ mode: 'animated', saved: 'animated' })
-    expect(modeReducer(anim, { type: 'PICK', mode: 'minimalistic' })).toBe(anim)
-  })
-
   it('animated + TOGGLE -> minimalistic (saved)', () => {
     const s = modeReducer(desktop({ mode: 'animated', saved: 'animated' }), { type: 'TOGGLE' })
     expect(s).toEqual({ mode: 'minimalistic', saved: 'minimalistic', isMobile: false })
@@ -115,11 +99,14 @@ describe('modeReducer — transition table', () => {
     expect(s).toEqual({ mode: 'animated', saved: 'animated', isMobile: false })
   })
 
-  it('TOGGLE in revealing/choosing is a no-op', () => {
+  it('TOGGLE in revealing is a no-op', () => {
     const rev = desktop()
     expect(modeReducer(rev, { type: 'TOGGLE' })).toBe(rev)
-    const ch = desktop({ mode: 'choosing' })
-    expect(modeReducer(ch, { type: 'TOGGLE' })).toBe(ch)
+  })
+
+  it('first TOGGLE from the unsaved default saves the other mode', () => {
+    const landed = modeReducer(desktop(), { type: 'REVEAL_DONE' })
+    expect(modeReducer(landed, { type: 'TOGGLE' })).toEqual({ mode: 'animated', saved: 'animated', isMobile: false })
   })
 
   it('TOGGLE on mobile is a no-op (mode is forced)', () => {
@@ -132,11 +119,6 @@ describe('modeReducer — mobile flips', () => {
   it('SET_MOBILE true forces minimalistic without touching saved', () => {
     const s = modeReducer(desktop({ mode: 'animated', saved: 'animated' }), { type: 'SET_MOBILE', isMobile: true })
     expect(s).toEqual({ mode: 'minimalistic', saved: 'animated', isMobile: true })
-  })
-
-  it('SET_MOBILE true from choosing forces minimalistic (chooser never shown)', () => {
-    const s = modeReducer(desktop({ mode: 'choosing' }), { type: 'SET_MOBILE', isMobile: true })
-    expect(s).toEqual({ mode: 'minimalistic', saved: null, isMobile: true })
   })
 
   it('SET_MOBILE true while revealing keeps revealing but records isMobile', () => {
@@ -152,10 +134,10 @@ describe('modeReducer — mobile flips', () => {
       .toEqual({ mode: 'animated', saved: 'animated', isMobile: false })
   })
 
-  it('SET_MOBILE false with nothing saved goes to choosing', () => {
+  it('SET_MOBILE false with nothing saved goes to the default', () => {
     const forced: ModeState = { mode: 'minimalistic', saved: null, isMobile: true }
     expect(modeReducer(forced, { type: 'SET_MOBILE', isMobile: false }))
-      .toEqual({ mode: 'choosing', saved: null, isMobile: false })
+      .toEqual({ mode: DEFAULT_MODE, saved: null, isMobile: false })
   })
 
   it('SET_MOBILE false while revealing keeps revealing', () => {

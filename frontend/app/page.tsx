@@ -11,7 +11,6 @@ import HologramCard from '@/components/HologramCard'
 import PyramidOverlay from '@/components/PyramidOverlay'
 import Hero from '@/components/Hero'
 import RecruiterDoc from '@/components/RecruiterDoc'
-import ModeChooser from '@/components/ModeChooser'
 import ModeToggle from '@/components/ModeToggle'
 
 // If the GLB never loads, the reveal never completes; unstick the UI after this long.
@@ -37,7 +36,7 @@ export default function Home() {
   // Animated pages through sections, so one is always lit. Minimalistic has no
   // card to justify a lit lobe, so only a chat reply lights one.
   const brainSection = mode === 'animated' ? activeSectionId : chatSectionId
-  const brainSide = mode === 'choosing' || mode === 'minimalistic' ? 'right' : 'center'
+  const brainSide = mode === 'minimalistic' ? 'right' : 'center'
 
   const revealDone = useCallback(() => {
     dispatch({ type: 'REVEAL_DONE' })
@@ -62,7 +61,6 @@ export default function Home() {
 
   useEffect(() => { if (modeState.saved) saveMode(modeState.saved) }, [modeState.saved])
 
-  const pickAnimated = useCallback(() => dispatch({ type: 'PICK', mode: 'animated' }), [])
 
   const goNext = useCallback(() => {
     setActiveSectionIdx((i) => (i + 1) % CONTENT_SECTIONS.length)
@@ -145,9 +143,7 @@ export default function Home() {
         </Suspense>
       )}
 
-      {/* Paging: real navigation in Animated; while choosing, any scroll intent means "Animated". */}
-      {mode === 'animated'  && <ScrollContent onNext={goNext} onPrev={goPrev} />}
-      {mode === 'choosing'  && <ScrollContent onNext={pickAnimated} onPrev={pickAnimated} />}
+      {mode === 'animated' && <ScrollContent onNext={goNext} onPrev={goPrev} />}
 
       {/* All UI fades in after brain reveal completes */}
       <div style={{
@@ -158,15 +154,7 @@ export default function Home() {
 
         {mode === 'animated' && <Hero isMobile={isMobile} hidden={messages.length > 0} />}
 
-        {(mode === 'choosing' || mode === 'minimalistic') && (
-          <RecruiterDoc
-            opacity={mode === 'minimalistic' ? 1 : 0.35}
-            interactive={mode === 'minimalistic'}
-            isMobile={isMobile}
-          />
-        )}
-
-        {mode === 'choosing' && <ModeChooser onPick={(m) => dispatch({ type: 'PICK', mode: m })} />}
+        {mode === 'minimalistic' && <RecruiterDoc opacity={1} interactive isMobile={isMobile} />}
 
         {mode === 'animated' && !isMobile && activeSectionId && (
           <HologramCard ref={setCardEl} sectionId={activeSectionId} visible={true} isMobile={isMobile} />
