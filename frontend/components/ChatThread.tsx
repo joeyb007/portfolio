@@ -87,9 +87,9 @@ function AudioPlayer({ audio, autoPlay, onSpeaking }: AudioPlayerProps) {
         {/* Play / pause */}
         <div style={{
           width: 22, height: 22, borderRadius: '50%',
-          border: '1px solid rgba(0,220,255,0.5)',
+          border: '1px solid var(--line-2)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, color: 'rgba(0,220,255,0.8)', fontSize: 9,
+          flexShrink: 0, color: 'var(--accent)', fontSize: 9,
         }}>
           {playing ? '■' : '▶'}
         </div>
@@ -106,8 +106,8 @@ function AudioPlayer({ audio, autoPlay, onSpeaking }: AudioPlayerProps) {
                   width:           '100%',
                   height:          `${Math.round(h * 100)}%`,
                   background:      playing
-                    ? `rgba(0,220,255,${(0.4 + h * 0.5).toFixed(2)})`
-                    : `rgba(0,220,255,${(0.15 + h * 0.15).toFixed(2)})`,
+                    ? `color-mix(in srgb, var(--accent) ${Math.round((0.4 + h * 0.5) * 100)}%, transparent)`
+                    : `color-mix(in srgb, var(--accent) ${Math.round((0.15 + h * 0.15) * 100)}%, transparent)`,
                   borderRadius:    2,
                   transformOrigin: 'center',
                   transition:      'background 0.2s',
@@ -219,13 +219,13 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
               padding:        '10px 14px',
               borderRadius:   m.role === 'user' ? '16px 16px 4px 16px' : '4px 16px 16px 16px',
               background:     m.role === 'user'
-                ? 'rgba(125,216,255,0.12)'
-                : m.blocked ? 'rgba(255,100,100,0.06)' : 'rgba(5,10,20,0.75)',
+                ? 'var(--surface-2)'
+                : m.blocked ? 'rgba(255,100,100,0.06)' : 'color-mix(in srgb, var(--bg) 75%, transparent)',
               border:         m.role === 'user'
-                ? '1px solid rgba(125,216,255,0.3)'
-                : m.blocked ? '1px solid rgba(255,100,100,0.15)' : '1px solid rgba(255,255,255,0.06)',
+                ? '1px solid var(--line-2)'
+                : m.blocked ? '1px solid rgba(255,100,100,0.15)' : '1px solid var(--line)',
               backdropFilter: 'blur(12px)',
-              color:          m.role === 'user' ? 'rgba(125,216,255,0.95)' : 'rgba(240,244,255,0.8)',
+              color:          m.role === 'user' ? 'var(--accent)' : 'var(--fg-2)',
               fontSize:       13,
               lineHeight:     1.6,
               position:       'relative',
@@ -237,7 +237,7 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
                 position:        'absolute',
                 top: 0, left: 0, right: 0,
                 height:          '100%',
-                background:      'linear-gradient(to right, transparent, rgba(0,220,255,0.08), transparent)',
+                background:      'linear-gradient(to right, transparent, color-mix(in srgb, var(--glow) 12%, transparent), transparent)',
                 transformOrigin: 'left',
                 animation:       'scanLine 0.6s ease forwards',
                 pointerEvents:   'none',
@@ -269,8 +269,8 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
             alignItems:  'center',
             gap:         6,
             padding:     '8px 12px',
-            background:  'rgba(5,10,20,0.6)',
-            border:      '1px solid rgba(0,220,255,0.12)',
+            background:  'color-mix(in srgb, var(--bg) 60%, transparent)',
+            border:      '1px solid var(--line)',
             backdropFilter: 'blur(12px)',
             borderRadius: '4px 16px 16px 16px',
           }}>
@@ -278,7 +278,7 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
               <div key={i} style={{
                 width:       6, height: 6,
                 borderRadius:'50%',
-                background:  'rgba(0,220,255,0.7)',
+                background:  'var(--fg-3)',
                 animation:   `thinkPulse 1.2s ease-in-out ${i * 0.2}s infinite`,
               }} />
             ))}

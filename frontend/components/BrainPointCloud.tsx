@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -9,6 +9,14 @@ import { SECTIONS, type SectionId } from '@/lib/regionMap'
 const TARGET_RADIUS = 1.3
 const BASE_SIZE     = 0.04
 const ACTIVE_SIZE   = 0.06
+const GLOW_FALLBACK = '#c9ccd4'   // mirrors --glow in globals.css
+const LAYOUT_SPEED  = 6           // exponential lerp rate; ~2.7 % residual at 0.6 s
+
+export interface BrainLayout {
+  scale: number   // multiplier on the centring base scale (screen placement is the camera's job, see BrainCanvas)
+}
+
+const CENTER_LAYOUT: BrainLayout = { scale: 1 }
 
 // Bottom-to-top scan order (0 = first to appear, 1 = last)
 const REVEAL_ORDER: Record<string, number> = {
@@ -20,13 +28,14 @@ const REVEAL_ORDER: Record<string, number> = {
   projects:   0.80,   // parietal crown — highest
 }
 
-// Transfer "excess red" into the blue channel so red regions become blue,
-// while blues, whites, and grays are unchanged — preserves all original structure.
-function remapRedToBlue(r: number, g: number, b: number, out: Float32Array, i: number) {
-  const redness = Math.max(0, r - b)
-  out[i]     = r - redness
-  out[i + 1] = g
-  out[i + 2] = Math.min(1, b + redness)
+// Collapse the source colour to luminance, then tint it slightly cool so the
+// brain reads as steel grey. Structure (the relative brightness between
+// vertices) is preserved; only the hue is discarded.
+function remapToSteel(r: number, g: number, b: number, out: Float32Array, i: number) {
+  const l = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  out[i]     = l * 0.79
+  out[i + 1] = l * 0.80
+  out[i + 2] = l * 0.83
 }
 
 
@@ -105,16 +114,16 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
 
       posAcc[id].push(_v.x, _v.y, _v.z)
 
-      if (col) remapRedToBlue(col.getX(i), col.getY(i), col.getZ(i), _cr, 0)
-      else      remapRedToBlue(matR, matG, matB, _cr, 0)
+      if (col) remapToSteel(col.getX(i), col.getY(i), col.getZ(i), _cr, 0)
+      else      remapToSteel(matR, matG, matB, _cr, 0)
       colAcc[id].push(_cr[0], _cr[1], _cr[2])
     }
   })
 
-  // Compute scene-space centroid for each lobe.
-  // posAcc values are in the source model's world space.
-  // The group applies: scene_pos = groupPosition + groupScale * posAcc_pos
-  // Therefore: centroid_scene = s * (mean(posAcc[id]) - center)
+  // Compute each lobe's centroid in the GROUP-LOCAL frame (the same frame as
+  // the geometry). Consumers must transform it through the group's current
+  // matrixWorld; the group's scale is animated (layout) so baking the
+  // base transform in here would go stale as soon as it moves.
   const centroids = {} as Record<SectionId, [number, number, number]>
   SECTIONS.forEach(id => {
     const pos = posAcc[id]
@@ -122,11 +131,7 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
     const n = pos.length / 3
     let x = 0, y = 0, z = 0
     for (let i = 0; i < pos.length; i += 3) { x += pos[i]; y += pos[i + 1]; z += pos[i + 2] }
-    centroids[id] = [
-      -s * center.x + s * (x / n),
-      -s * center.y + s * (y / n),
-      -s * center.z + s * (z / n),
-    ]
+    centroids[id] = [x / n, y / n, z / n]
   })
 
   const entries: PointsEntry[] = SECTIONS.map(sectionId => {
@@ -147,8 +152,12 @@ interface Props {
   onRegionClick:    (sectionId: SectionId) => void
   isMobile:         boolean
   speaking?:        boolean
+  layout?:          BrainLayout
   onRevealDone:     () => void
+  // Centroids are group-local; see buildBlueBrain.
   onCentroidsReady: (centroids: Record<SectionId, [number, number, number]>) => void
+  // Optional handle on the animated group so a sibling can read its matrixWorld.
+  groupRef?:        RefObject<THREE.Group | null>
 }
 
 export default function BrainPointCloud({
@@ -156,11 +165,16 @@ export default function BrainPointCloud({
   onRegionClick,
   isMobile,
   speaking = false,
+  layout = CENTER_LAYOUT,
   onRevealDone,
   onCentroidsReady,
+  groupRef: externalGroupRef,
 }: Props) {
   const { scene } = useGLTF('/brain.glb')
   const groupRef  = useRef<THREE.Group>(null)
+  // Ref so a layout change only retargets the per-frame lerp; nothing restarts.
+  const layoutRef = useRef(layout)
+  useEffect(() => { layoutRef.current = layout })
   const revealRef       = useRef(0)
   const revealDoneRef   = useRef(false)
   const onRevealDoneRef = useRef(onRevealDone)
@@ -195,6 +209,14 @@ export default function BrainPointCloud({
     []
   )
 
+  // Glow colour comes from the --glow theme token, read once at mount.
+  const glowColor = useMemo(() => {
+    const css = typeof window !== 'undefined'
+      ? getComputedStyle(document.documentElement).getPropertyValue('--glow').trim()
+      : ''
+    return new THREE.Color(css || GLOW_FALLBACK)
+  }, [])
+
   // Glow layer — same geometry, AdditiveBlending, single uniform color.
   // Opacity goes 0 → 0.7 only on the active section, giving a consistent
   // highlight colour regardless of which region is selected.
@@ -205,7 +227,7 @@ export default function BrainPointCloud({
           sectionId,
           new THREE.PointsMaterial({
             size:            ACTIVE_SIZE * 1.4,
-            color:           new THREE.Color('#7dd8ff'),
+            color:           glowColor,
             transparent:     true,
             opacity:         0,
             blending:        THREE.AdditiveBlending,
@@ -214,7 +236,7 @@ export default function BrainPointCloud({
           }),
         ])
       ) as Record<SectionId, THREE.PointsMaterial>,
-    []
+    [glowColor]
   )
 
   useEffect(() => {
@@ -227,7 +249,9 @@ export default function BrainPointCloud({
 
   useFrame((state, delta) => {
     if (!revealDoneRef.current && groupRef.current) {
-      // Place at final position immediately — only the scanline animates
+      // Snap to the centring base — only the scanline animates during reveal.
+      // The layout scale is deliberately ignored here so the reveal is
+      // always full-size; the lerp below takes over once it completes.
       groupRef.current.position.set(...groupPosition)
       groupRef.current.scale.setScalar(groupScale)
 
@@ -267,12 +291,29 @@ export default function BrainPointCloud({
       return  // skip normal highlight logic during reveal
     }
 
+    // Post-reveal: glide the group scale toward base * layout. Same exponential
+    // pattern as the colour dim below, tuned to settle in roughly 0.6 s.
+    // groupPosition = -groupScale * modelCentre, i.e. it is what puts the
+    // model's centre at the origin. Scaling the group scales that offset too,
+    // so the position must shrink by the same factor or the brain's centre
+    // leaves the orbit axis and swings toward and away from the camera.
+    if (groupRef.current) {
+      const k = Math.min(1, delta * LAYOUT_SPEED)
+      const g = groupRef.current
+      const f = layoutRef.current.scale
+      const targetScale = groupScale * f
+      g.scale.setScalar(g.scale.x + (targetScale - g.scale.x) * k)
+      g.position.x += (groupPosition[0] * f - g.position.x) * k
+      g.position.y += (groupPosition[1] * f - g.position.y) * k
+      g.position.z += (groupPosition[2] * f - g.position.z) * k
+    }
+
     const speed = 4
     SECTIONS.forEach((sectionId) => {
       const isActive  = sectionId === activeSection
       const base      = baseMaterials[sectionId]
       const glow      = glowMaterials[sectionId]
-      const targetDim = isActive ? 1.0 : 0.45
+      const targetDim = isActive ? 0.8 : 0.4   // steel vertex colours are already light; 1.0 clipped to a flat white block
 
       base.color.r += (targetDim - base.color.r) * Math.min(1, delta * speed)
       base.color.g += (targetDim - base.color.g) * Math.min(1, delta * speed)
@@ -281,13 +322,18 @@ export default function BrainPointCloud({
       // While speaking, pulse the active lobe glow between 0.6 and 1.1
       const speakingGlow = isActive && speaking
         ? 0.75 + Math.sin(state.clock.elapsedTime * 6) * 0.35
-        : isActive ? 0.6 : 0
+        : isActive ? 0.3 : 0   // additive on a grey base saturates fast; 0.6 read as a flat white block
       glow.opacity += (speakingGlow - glow.opacity) * Math.min(1, delta * speed)
     })
   })
 
+  const setGroupRef = useCallback((g: THREE.Group | null) => {
+    groupRef.current = g
+    if (externalGroupRef) externalGroupRef.current = g
+  }, [externalGroupRef])
+
   return (
-    <group ref={groupRef}>
+    <group ref={setGroupRef}>
       {entries.map((entry, i) => (
         <group key={i}>
           <points geometry={entry.geometry} material={baseMaterials[entry.sectionId]} />

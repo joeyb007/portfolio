@@ -62,7 +62,7 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
 
   const btnBase: React.CSSProperties = {
     background:    'none',
-    border:        '1px solid rgba(125,216,255,0.25)',
+    border:        '1px solid var(--line)',
     borderRadius:  '50%',
     width:         36,
     height:        36,
@@ -82,10 +82,10 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
       right:                0,
       zIndex:               40,
       padding:              '12px 16px',
-      background:           'rgba(5,10,20,0.85)',
+      background:           'color-mix(in srgb, var(--bg) 85%, transparent)',
       backdropFilter:       'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
-      borderTop:            '1px solid rgba(125,216,255,0.15)',
+      borderTop:            '1px solid var(--line)',
       display:              'flex',
       gap:                  10,
       alignItems:           'center',
@@ -96,11 +96,11 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
         title={voiceEnabled ? 'Voice on — click to mute' : 'Voice off — click to enable'}
         style={{
           ...btnBase,
-          borderColor: voiceEnabled ? 'rgba(0,220,255,0.5)' : 'rgba(125,216,255,0.15)',
+          borderColor: voiceEnabled ? 'var(--line-2)' : 'var(--line)',
         }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-          stroke={voiceEnabled ? 'rgba(0,220,255,0.85)' : 'rgba(125,216,255,0.3)'}
+          stroke={voiceEnabled ? 'var(--accent)' : 'var(--fg-4)'}
           strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           {voiceEnabled ? (
             <>
@@ -128,11 +128,11 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
         }}
         style={{
           flex:         1,
-          background:   recording ? 'rgba(255,60,60,0.06)' : 'rgba(125,216,255,0.06)',
-          border:       `1px solid ${recording ? 'rgba(255,80,80,0.35)' : 'rgba(125,216,255,0.2)'}`,
+          background:   recording ? 'rgba(255,60,60,0.06)' : 'var(--surface)',
+          border:       `1px solid ${recording ? 'rgba(255,80,80,0.35)' : 'var(--line)'}`,
           borderRadius: 24,
           padding:      '10px 18px',
-          color:        '#f0f4ff',
+          color:        'var(--fg)',
           fontSize:     14,
           outline:      'none',
           fontFamily:   'inherit',
@@ -147,7 +147,7 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
           title={recording ? 'Stop recording' : 'Speak'}
           style={{
             ...btnBase,
-            borderColor: recording ? 'rgba(255,80,80,0.6)' : 'rgba(125,216,255,0.25)',
+            borderColor: recording ? 'rgba(255,80,80,0.6)' : 'var(--line)',
             background:  recording ? 'rgba(255,60,60,0.12)' : 'none',
             animation:   recording ? 'micPulse 1.2s ease-in-out infinite' : 'none',
           }}
@@ -159,7 +159,7 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
             }
           `}</style>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-            stroke={recording ? 'rgba(255,100,100,0.9)' : 'rgba(125,216,255,0.5)'}
+            stroke={recording ? 'rgba(255,100,100,0.9)' : 'var(--fg-3)'}
             strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
             <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -174,11 +174,11 @@ export default function ChatBar({ onSend, loading, voiceEnabled, onVoiceToggle, 
         disabled={loading}
         onClick={submit}
         style={{
-          background:    'rgba(125,216,255,0.12)',
-          border:        '1px solid rgba(125,216,255,0.3)',
+          background:    'var(--surface-2)',
+          border:        '1px solid var(--line-2)',
           borderRadius:  20,
           padding:       '8px 18px',
-          color:         'rgba(125,216,255,0.9)',
+          color:         'var(--accent)',
           fontSize:      11,
           fontFamily:    'var(--font-geist-mono), monospace',
           letterSpacing: '0.1em',

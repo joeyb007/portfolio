@@ -52,10 +52,10 @@ export default function SectionCard({ activeSectionId, onOpen }: Props) {
         transform:            'translateY(-50%)',
         zIndex:               10,
         width:                'min(380px, 42vw)',
-        background:           'rgba(5, 10, 20, 0.75)',
+        background:           'color-mix(in srgb, var(--bg) 75%, transparent)',
         backdropFilter:       'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        border:               '1px solid rgba(255,255,255,0.08)',
+        border:               '1px solid var(--line)',
         borderLeft:           `2px solid ${cfg.color}`,
         borderRadius:         12,
         padding:              '28px 32px',
@@ -76,14 +76,14 @@ export default function SectionCard({ activeSectionId, onOpen }: Props) {
       <h2 style={{
         fontSize:   22,
         fontWeight: 600,
-        color:      '#f0f4ff',
+        color:      'var(--fg)',
         margin:     '0 0 10px',
         lineHeight: 1.2,
       }}>
         {title}
       </h2>
       <p style={{
-        color:      'rgba(240,244,255,0.55)',
+        color:      'var(--fg-2)',
         fontSize:   13,
         lineHeight: 1.6,
         margin:     '0 0 16px',
@@ -94,7 +94,7 @@ export default function SectionCard({ activeSectionId, onOpen }: Props) {
         fontFamily:    'var(--font-geist-mono), monospace',
         fontSize:      10,
         letterSpacing: '0.1em',
-        color:         'rgba(125,216,255,0.5)',
+        color:         'var(--fg-3)',
         margin:        0,
       }}>
         Click to open →

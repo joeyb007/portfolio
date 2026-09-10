@@ -23,6 +23,7 @@ A 3D point-cloud brain rendered in the browser that you can scroll through, clic
 - **Talk to it.** Ask about my work, projects, or background and get a real (Claude-generated, ElevenLabs-spoken) answer.
 - **Click a lobe.** Brain regions highlight and a holographic card projects out with the relevant content.
 - **Scroll to explore.** Sections are paginated and tied to brain region highlights.
+- **Two modes.** After the reveal the site lands in **Minimalistic**, a one-page, Notion-style summary with the brain parked to the side and chat kept. The corner chip switches to **Animated**, the full 3D experience. The choice is remembered; `?mode=minimalistic` or `?mode=animated` in the URL overrides it. Phones always get the summary.
 
 ## Tech stack
 

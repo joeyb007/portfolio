@@ -4,7 +4,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
   return (
     <div style={{
       minHeight:  '100vh',
-      background: '#0a0e14',
+      background: 'var(--bg)',
       padding:    '48px 24px 96px',
     }}>
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
@@ -15,7 +15,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
           fontSize:      11,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          color:         'rgba(0,220,255,0.6)',
+          color:         'var(--fg-3)',
           textDecoration: 'none',
         }}>
           ← josephbarbosa.com

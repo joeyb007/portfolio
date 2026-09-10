@@ -6,9 +6,9 @@ import { STUDEAL_ARTIFACTS, type StudealArtifactName } from './studealArtifacts'
 
 // Maps the artifacts' theme hooks (--ink/--muted/--accent) onto the site palette.
 const themeVars = {
-  '--ink': 'rgba(225,245,255,0.92)',
-  '--muted': 'rgba(160,205,235,0.55)',
-  '--accent': '#00dcff',
+  '--ink': 'var(--fg)',
+  '--muted': 'var(--fg-3)',
+  '--accent': 'var(--accent)',
 } as CSSProperties
 
 export default function ArtifactEmbed({ name }: { name: StudealArtifactName }) {

@@ -108,10 +108,10 @@ export const experience: ExperienceEntry[] = [
     period:      'Aug 2026 – Present',
     location:    'Waterloo, Canada',
     bullets: [
-      'Evaluating ASR (speech-to-text) models on a 380-hour corpus of code-switched Kazakh–Russian medical transcripts',
-      'Digging into how transcription breaks when speakers switch languages mid-sentence, and using those error patterns to make AI-assisted clinical documentation models more robust',
+      'Researching multi-agent LLM systems for sensemaking over heterogeneous healthcare data',
+      'Exploring how clinical questions can be decomposed into sub-tasks that specialized agents can reason over and answer',
     ],
-    tags: ['ASR', 'Model Evaluation', 'NLP', 'Healthcare AI'],
+    tags: ['Multi-agent LLMs', 'Healthcare AI', 'Clinical NLP'],
     logo: '/logos/waterloo.png'
   },
   {

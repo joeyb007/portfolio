@@ -4,16 +4,35 @@ import { useRef, useState, useMemo, useEffect } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
-import BrainPointCloud from './BrainPointCloud'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
+import BrainPointCloud, { type BrainLayout } from './BrainPointCloud'
 import type { SectionId } from '@/lib/regionMap'
+
+export type BrainSide = 'center' | 'right'
+
+// Where the brain sits on screen per side. `screenX` is the brain centre in
+// NDC (-1 left … +1 right) and is applied as a camera view offset, so it holds
+// at any aspect ratio; the brain and the orbit target both stay at the origin.
+// Module-level so the object identity is stable.
+interface SideLayout { screenX: number; brain: BrainLayout }
+const LAYOUTS: Record<BrainSide, SideLayout> = {
+  center: { screenX: 0,   brain: { scale: 1 } },
+  right:  { screenX: 0.5, brain: { scale: 0.8 } },    // centred in the right half (75 % of the viewport width), mirroring the doc in the left half
+}
+
+const SHIFT_SPEED = 6  // matches BrainPointCloud's layout lerp so shift and scale move together
 
 // Projects the active lobe centroid to screen coordinates every frame
 // and fires onScreenPos so the parent can draw the SVG pyramid overlay.
+// `centroid` is in the brain group's LOCAL frame; it is transformed through
+// the group's live matrixWorld so the projection tracks the layout lerp.
 function LobeTracker({
   centroid,
+  groupRef,
   onScreenPos,
 }: {
   centroid:    [number, number, number]
+  groupRef:    React.RefObject<THREE.Group | null>
   onScreenPos: (x: number, y: number) => void
 }) {
   const { camera, size } = useThree()
@@ -22,7 +41,10 @@ function LobeTracker({
   useEffect(() => { cbRef.current = onScreenPos })
 
   useFrame(() => {
-    vec.set(...centroid).project(camera)
+    const group = groupRef.current
+    if (!group) return
+    group.updateWorldMatrix(true, false)  // group moved this frame; don't wait for render
+    vec.set(...centroid).applyMatrix4(group.matrixWorld).project(camera)
     const x = (vec.x + 1) / 2 * size.width
     const y = (1 - vec.y) / 2 * size.height
     cbRef.current(x, y)
@@ -31,16 +53,47 @@ function LobeTracker({
   return null
 }
 
-// Renders OrbitControls and auto-levels the polar angle back to PI/2 after
-// the user stops dragging. Must live inside Canvas to access useFrame.
-function AutoLevelControls({ enabled }: { enabled: boolean }) {
-  const controlsRef        = useRef<any>(null)
-  const lastInteractionRef = useRef(Date.now())
+// Renders OrbitControls, slides the projection window so the brain parks at
+// `screenX`, and auto-levels the polar angle back to PI/2 after the user stops
+// dragging. Must live inside Canvas to access useFrame.
+function AutoLevelControls({
+  enabled,
+  screenX,
+}: {
+  enabled: boolean
+  screenX: number   // brain centre in NDC x; 0 = viewport centre
+}) {
+  const controlsRef        = useRef<OrbitControlsImpl>(null)
+  const lastInteractionRef = useRef(0)  // epoch ms of last drag end; 0 = never
   const strengthRef        = useRef(0)  // 0→1 ease-in so leveling isn't abrupt
+  const shiftRef           = useRef(0)  // current NDC shift, lerped toward screenX
+  const screenXRef         = useRef(screenX)
+  useEffect(() => { screenXRef.current = screenX })
+  const { size } = useThree()
 
   useFrame((state, delta) => {
     const controls = controlsRef.current
-    if (!controls || !enabled) return
+    if (!controls) return
+
+    const cam    = state.camera as THREE.PerspectiveCamera
+    const target = controls.target as THREE.Vector3
+
+    // 1. OrbitControls always looks AT its target (the origin, where the brain
+    //    is), so to park the brain off-centre we shift the projection window
+    //    rather than move anything in world space. A negative x offset shows a
+    //    region to the left of centre, which moves the brain right. Because
+    //    the shift is in the projection matrix, camera.project() stays correct
+    //    for LobeTracker and pointer picking.
+    const ndcX = shiftRef.current
+    shiftRef.current += (screenXRef.current - ndcX) * Math.min(1, delta * SHIFT_SPEED)
+    if (Math.abs(shiftRef.current) > 1e-4) {
+      cam.setViewOffset(size.width, size.height, -shiftRef.current * size.width / 2, 0, size.width, size.height)
+    } else if (cam.view?.enabled) {
+      cam.clearViewOffset()
+    }
+
+    // 2. Auto-level after the user lets go.
+    if (!enabled) return
 
     const elapsed = Date.now() - lastInteractionRef.current
     if (elapsed < 1500) {
@@ -51,8 +104,6 @@ function AutoLevelControls({ enabled }: { enabled: boolean }) {
     // Gradually ramp up leveling strength over ~0.6 s
     strengthRef.current = Math.min(1, strengthRef.current + delta * 1.6)
 
-    const cam    = state.camera
-    const target = controls.target as THREE.Vector3
     const offset = new THREE.Vector3().subVectors(cam.position, target)
     const radius = offset.length()
 
@@ -97,23 +148,26 @@ interface Props {
   onRevealDone?:    () => void
   isMobile:         boolean
   speaking?:        boolean
+  brainSide?:       BrainSide
   onLobeScreenPos?: (x: number, y: number) => void
 }
 
-export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone, isMobile, speaking, onLobeScreenPos }: Props) {
+export default function BrainCanvas({
+  activeSection,
+  onRegionClick,
+  onRevealDone,
+  isMobile,
+  speaking,
+  brainSide = 'center',
+  onLobeScreenPos,
+}: Props) {
   const [revealDone, setRevealDone] = useState(false)
   const [centroids,  setCentroids]  = useState<Record<SectionId, [number, number, number]> | null>(null)
+  const groupRef = useRef<THREE.Group | null>(null)
+  const layout   = LAYOUTS[brainSide]
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 0,
-        opacity: isMobile ? 0.35 : 1,
-        pointerEvents: isMobile ? 'none' : 'auto',
-      }}
-    >
+    <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
       <Canvas
         camera={{ position: [0, 0.3, isMobile ? 9 : 5.5], fov: 35 }}
         gl={{ antialias: true, alpha: true }}
@@ -126,6 +180,8 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
           onRegionClick={onRegionClick}
           isMobile={isMobile}
           speaking={speaking}
+          layout={layout.brain}
+          groupRef={groupRef}
           onRevealDone={() => { setRevealDone(true); onRevealDone?.() }}
           onCentroidsReady={setCentroids}
         />
@@ -133,11 +189,12 @@ export default function BrainCanvas({ activeSection, onRegionClick, onRevealDone
         {centroids && activeSection && revealDone && onLobeScreenPos && (
           <LobeTracker
             centroid={centroids[activeSection]}
+            groupRef={groupRef}
             onScreenPos={onLobeScreenPos}
           />
         )}
 
-        <AutoLevelControls enabled={revealDone && !isMobile} />
+        <AutoLevelControls enabled={revealDone && !isMobile} screenX={layout.screenX} />
       </Canvas>
     </div>
   )

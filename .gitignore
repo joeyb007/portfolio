@@ -27,3 +27,4 @@ backend/__pycache__/
 .playwright-mcp/
 docs/
 backend/.env
+.superpowers/
