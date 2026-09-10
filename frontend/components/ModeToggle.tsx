@@ -11,9 +11,11 @@ interface Props {
 const SCAN_MS = 480   // keep in sync with the mode-scan keyframes in globals.css
 
 // Corner chip showing the current mode. When `mode` changes, a scanline sweeps
-// down the chip, wiping the old word out and the new one in (the same scan the
-// brain uses to reveal itself). Both words share one grid cell so the chip is
-// always as wide as the longer one and never reflows.
+// the chip, wiping the old word out and the new one in. Entering Animated scans
+// UP (the brain reveals bottom-to-top); entering Minimalistic scans DOWN. Both
+// words share one grid cell so the chip is always as wide as the longer one and
+// never reflows. At rest a faint line drifts down the chip and the border
+// breathes, so it reads as live hardware rather than a static button.
 export default function ModeToggle({ mode, onToggle }: Props) {
   const [shown, setShown] = useState<SavedMode>(mode)   // word currently on screen
   const scanning = mode !== shown                        // a swap is in flight until the timer lands
@@ -26,6 +28,7 @@ export default function ModeToggle({ mode, onToggle }: Props) {
   }, [mode, scanning])
 
   const other: SavedMode = shown === 'minimalistic' ? 'animated' : 'minimalistic'
+  const dir = mode === 'animated' ? 'up' : 'down'
 
   return (
     <button
@@ -35,7 +38,7 @@ export default function ModeToggle({ mode, onToggle }: Props) {
       aria-pressed={mode === 'minimalistic'}
       aria-label={`Switch to ${other} mode`}
       title={`Switch to ${other} mode`}
-      className="mode-chip"
+      className={`mode-chip${scanning ? ' is-scanning' : ''}`}
       style={{
         position:      'fixed',
         top:           20,
@@ -61,14 +64,14 @@ export default function ModeToggle({ mode, onToggle }: Props) {
       {/* current word: wiped out top→bottom while scanning */}
       <span
         aria-hidden
-        style={{ gridArea: '1 / 1', animation: scanning ? `mode-scan-out ${SCAN_MS}ms linear forwards` : undefined }}
+        style={{ gridArea: '1 / 1', animation: scanning ? `mode-scan-out-${dir} ${SCAN_MS}ms linear forwards` : undefined }}
       >
         {shown}
       </span>
       {/* incoming word: wiped in top→bottom while scanning, hidden otherwise */}
       <span
         aria-hidden
-        style={{ gridArea: '1 / 1', clipPath: 'inset(0 0 100% 0)', animation: scanning ? `mode-scan-in ${SCAN_MS}ms linear forwards` : undefined }}
+        style={{ gridArea: '1 / 1', clipPath: dir === 'down' ? 'inset(0 0 100% 0)' : 'inset(100% 0 0 0)', animation: scanning ? `mode-scan-in-${dir} ${SCAN_MS}ms linear forwards` : undefined }}
       >
         {other}
       </span>
@@ -79,12 +82,12 @@ export default function ModeToggle({ mode, onToggle }: Props) {
           position:   'absolute',
           left:       0,
           right:      0,
-          top:        -2,
+          top:        dir === 'down' ? -2 : '100%',
           height:     1,
           background: 'var(--fg)',
           boxShadow:  '0 0 6px var(--glow)',
           opacity:    0,
-          animation:  scanning ? `mode-scan-line ${SCAN_MS}ms linear forwards` : undefined,
+          animation:  scanning ? `mode-scan-line-${dir} ${SCAN_MS}ms linear forwards` : undefined,
         }}
       />
     </button>
