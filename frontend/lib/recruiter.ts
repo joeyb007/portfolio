@@ -1,21 +1,21 @@
 // ---------------------------------------------------------------------------
 // Content for the Minimalistic (recruiter) doc. Projects and writing are
 // composed from lib/projects.ts and lib/blog.ts; only what has no existing
-// source (intro, education, experience one-liners, links) is authored here.
+// source (the pitch paragraph, experience one-liners, links) is authored here.
 // ---------------------------------------------------------------------------
 
 import { PROJECTS } from './projects'
 import { getSortedPosts } from './blog'
 
-export interface DocLink  { label: string; href: string }
-export interface DocItem  { text: string; strong?: string; href?: string; logo?: string; note?: string }
-export interface DocGroup { label: string; marker: '◆' | '■'; items: DocItem[] }
+export interface DocLink   { label: string; href: string }
+export interface DocEntity { strong: string; href?: string; logo?: string }   // a bold, underlined proper noun, optionally with an emblem
+export interface DocItem   extends Partial<DocEntity> { text: string; note?: string }
+export interface DocGroup  { label: string; marker: '◆' | '■'; items: DocItem[] }
+export type PitchSegment = string | DocEntity
 export interface RecruiterDoc {
-  name:   string
-  intro:  string      // one line: focus · location · seeking
-  top:    DocItem[]   // education + current research, no group label
-  groups: DocGroup[]  // "what i've been building", "previously", "writing"
-  links:  DocLink[]   // resume, github, linkedin, email, x
+  pitch:  PitchSegment[]   // one paragraph: who I am, where I study, what I'm after
+  groups: DocGroup[]       // currently, previously, projects, writing
+  links:  DocLink[]        // resume, github, linkedin, email, x
 }
 
 /** First sentence: up to the first `.`/`!`/`?` that is followed by whitespace or end of string. */
@@ -31,9 +31,18 @@ export function deriveNote(p: { liveUrl?: string; tagline: string }): string | u
   return users ? `${users[1]} users` : undefined
 }
 
-const building: DocGroup = {
-  label:  "what i've been building:",
+const currently: DocGroup = {
+  label:  'currently:',
   marker: '◆',
+  items: [
+    { logo: 'waterloo.png', strong: 'University of Waterloo', href: 'https://uwaterloo.ca',
+      text: 'Undergraduate Research Assistant · multi-agent LLM systems for healthcare data sensemaking and clinical question decomposition' },
+  ],
+}
+
+const projects: DocGroup = {
+  label:  'projects:',
+  marker: '■',
   items:  PROJECTS.map(p => ({
     strong: p.name,
     text:   firstSentence(p.tagline),
@@ -56,21 +65,21 @@ const writing: DocGroup = {
   label:  'writing:',
   marker: '■',
   items:  getSortedPosts().map(post => ({
-    strong: post.title,
+    strong: post.short ?? post.title,
     text:   '',
     href:   `/blog/${post.slug}`,
   })),
 }
 
 export const RECRUITER: RecruiterDoc = {
-  name:  'Joseph Barbosa',
-  intro: 'Building at the intersection of applied agentic AI, ML research, and product. Toronto. Seeking Winter 2027 internships.',
-  top: [
-    { logo: 'waterloo.png', strong: 'University of Waterloo',     text: 'Computer Science',        href: 'https://uwaterloo.ca', note: 'CS' },
-    { logo: 'laurier.png',  strong: 'Wilfrid Laurier University', text: 'Business Administration', href: 'https://wlu.ca',       note: 'BBA' },
-    { logo: 'waterloo.png', strong: 'University of Waterloo',     text: 'Research · multi-agent LLM systems for healthcare data sensemaking and clinical question decomposition', note: 'now' },
+  pitch: [
+    "Hey! I'm ", { strong: 'Joseph Barbosa' },
+    ', a CS (AI) and BBA double-degree student at ',
+    { strong: 'Waterloo', logo: 'waterloo.png', href: 'https://uwaterloo.ca' }, ' and ',
+    { strong: 'Laurier',  logo: 'laurier.png',  href: 'https://wlu.ca' },
+    '. I build at the intersection of applied agentic AI, ML research, and product, and I\'m looking for Winter 2027 internships.',
   ],
-  groups: [building, previously, writing],
+  groups: [currently, previously, projects, writing],
   links: [
     { label: 'resume',   href: '/resume.pdf' },
     { label: 'github',   href: 'https://github.com/joeyb007' },

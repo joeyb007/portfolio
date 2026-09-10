@@ -1,6 +1,7 @@
 export interface BlogPost {
   slug:    string
   title:   string
+  short?:  string   // optional shorter title for tight listings (recruiter doc)
   date:    string   // ISO date, e.g. '2026-06-18'
   excerpt: string
 }
@@ -9,6 +10,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     slug:    'let-me-call-a-guy',
     title:   'Let Me Call a Guy: What I Learned Building Agents for the Messiest Marketplaces on the Internet',
+    short:   'Let Me Call a Guy',
     date:    '2026-08-14',
     excerpt: 'Four months building Studeal, a deal-hunting agent for secondhand marketplaces — browser fleets, context rot, multimodal embeddings, and why P2P is the next frontier of agentic commerce.',
   },

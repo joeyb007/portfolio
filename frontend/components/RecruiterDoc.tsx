@@ -1,7 +1,7 @@
 'use client'
 
 import type { CSSProperties } from 'react'
-import { RECRUITER, type DocItem, type DocGroup } from '@/lib/recruiter'
+import { RECRUITER, type DocEntity, type DocItem, type DocGroup } from '@/lib/recruiter'
 
 interface Props {
   opacity:     number
@@ -22,7 +22,7 @@ const strongStyle: CSSProperties = {
 
 const isExternal = (href: string) => /^https?:/.test(href)
 
-function Strong({ item }: { item: DocItem }) {
+function Strong({ item }: { item: Partial<DocEntity> }) {
   if (!item.strong) return null
   if (!item.href) return <span style={strongStyle}>{item.strong}</span>
   return (
@@ -39,6 +39,31 @@ function Strong({ item }: { item: DocItem }) {
   )
 }
 
+function Emblem({ logo }: { logo: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/logos/${logo}`}
+      alt=""
+      aria-hidden
+      style={{ width: 12, height: 12, borderRadius: 3, objectFit: 'cover',
+        verticalAlign: '-1px', marginRight: 5, display: 'inline-block' }}
+    />
+  )
+}
+
+function Pitch() {
+  return (
+    <p style={{ margin: '0 0 6px', fontSize: 15, lineHeight: 1.7, color: 'var(--fg-2)' }}>
+      {RECRUITER.pitch.map((seg, i) =>
+        typeof seg === 'string'
+          ? <span key={i}>{seg}</span>
+          : <span key={i} style={{ whiteSpace: 'nowrap' }}>{seg.logo && <Emblem logo={seg.logo} />}<Strong item={seg} /></span>
+      )}
+    </p>
+  )
+}
+
 function Item({ item, glyph, glyphColor, indent }: {
   item: DocItem; glyph: string; glyphColor: string; indent: number
 }) {
@@ -46,16 +71,7 @@ function Item({ item, glyph, glyphColor, indent }: {
     <li style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingLeft: indent, margin: '5px 0' }}>
       <span style={{ ...mono, color: glyphColor, fontSize: 10, flexShrink: 0, lineHeight: 1.6 }}>{glyph}</span>
       <span style={{ color: 'var(--fg-2)', fontSize: 13.5, lineHeight: 1.6 }}>
-        {item.logo && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={`/logos/${item.logo}`}
-            alt=""
-            aria-hidden
-            style={{ width: 12, height: 12, borderRadius: 3, objectFit: 'cover',
-              verticalAlign: '-1px', marginRight: 6, display: 'inline-block' }}
-          />
-        )}
+        {item.logo && <Emblem logo={item.logo} />}
         <Strong item={item} />
         {item.strong && item.text && ' '}
         {item.text && <span>{item.strong ? `· ${item.text}` : item.text}</span>}
@@ -104,17 +120,9 @@ export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) 
       }}
     >
       <div style={{ maxWidth: 560 }}>
-        <h1 style={{ ...sans, margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--fg)', lineHeight: 1.3 }}>
-          {RECRUITER.name}
-        </h1>
-        <p style={{ margin: '6px 0 18px', fontSize: 13.5, lineHeight: 1.6, color: 'var(--fg-2)' }}>
-          {RECRUITER.intro}
-        </p>
+        <Pitch />
 
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {RECRUITER.top.map((item, i) => (
-            <Item key={i} item={item} glyph="◆" glyphColor="var(--fg-3)" indent={0} />
-          ))}
           {RECRUITER.groups.map(group => <Group key={group.label} group={group} />)}
         </ul>
 
