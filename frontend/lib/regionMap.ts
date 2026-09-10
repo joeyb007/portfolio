@@ -78,7 +78,7 @@ export const REGION_CONFIGS: Record<SectionId, RegionConfig> = {
         items: [
           {
             logo: 'waterloo.png', text: 'University of Waterloo',
-            desc: 'Undergraduate Research Assistant: evaluating ASR models on 380 hours of code-switched Kazakh–Russian medical transcripts to make AI clinical documentation more robust',
+            desc: 'Undergraduate Research Assistant: researching multi-agent LLM systems for heterogeneous healthcare data sensemaking and clinical question decomposition',
           },
         ],
       },

@@ -68,7 +68,7 @@ export const RECRUITER: RecruiterDoc = {
   top: [
     { logo: 'waterloo.png', strong: 'University of Waterloo',     text: 'Computer Science',        href: 'https://uwaterloo.ca', note: 'CS' },
     { logo: 'laurier.png',  strong: 'Wilfrid Laurier University', text: 'Business Administration', href: 'https://wlu.ca',       note: 'BBA' },
-    { logo: 'waterloo.png', strong: 'University of Waterloo',     text: 'Research · ASR evaluation on 380h of code-switched Kazakh–Russian medical audio', note: 'now' },
+    { logo: 'waterloo.png', strong: 'University of Waterloo',     text: 'Research · multi-agent LLM systems for healthcare data sensemaking and clinical question decomposition', note: 'now' },
   ],
   groups: [building, previously, writing],
   links: [

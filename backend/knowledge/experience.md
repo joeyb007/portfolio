@@ -3,7 +3,7 @@
 ## University of Waterloo — Undergraduate Research Assistant (Aug 2026 – Present)
 **Waterloo, ON**
 
-I'm currently doing research on ASR (automatic speech recognition) for clinical documentation. I evaluate ASR models on a 380-hour corpus of code-switched Kazakh–Russian medical transcripts, analyzing how transcription errors emerge when speakers switch languages mid-sentence, and using those error patterns to improve the robustness of AI-assisted clinical documentation models.
+I'm currently researching multi-agent LLM systems for heterogeneous healthcare data sensemaking and clinical question decomposition: how a team of specialized LLM agents can make sense of messy, mixed-format healthcare data, and how a clinical question can be broken down into sub-questions that those agents can reason over and answer.
 
 ## Scotiabank — Software Engineering Intern (May 2026 – Aug 2026)
 **Consumer Banking Engineering, Toronto**
@@ -28,4 +28,4 @@ I implemented a full ML training and evaluation pipeline using train-test split,
 
 ## Summary
 
-I've completed 3 internships across AI, full-stack, and product, and I'm currently doing ASR research at the University of Waterloo. Each role involved building something new rather than maintaining existing systems — I gravitate toward greenfield work and owning initiatives end-to-end.
+I've completed 3 internships across AI, full-stack, and product, and I'm currently doing multi-agent LLM research for healthcare at the University of Waterloo. Each role involved building something new rather than maintaining existing systems — I gravitate toward greenfield work and owning initiatives end-to-end.
