@@ -293,11 +293,19 @@ export default function BrainPointCloud({
 
     // Post-reveal: glide the group scale toward base * layout. Same exponential
     // pattern as the colour dim below, tuned to settle in roughly 0.6 s.
+    // groupPosition = -groupScale * modelCentre, i.e. it is what puts the
+    // model's centre at the origin. Scaling the group scales that offset too,
+    // so the position must shrink by the same factor or the brain's centre
+    // leaves the orbit axis and swings toward and away from the camera.
     if (groupRef.current) {
       const k = Math.min(1, delta * LAYOUT_SPEED)
       const g = groupRef.current
-      const targetScale = groupScale * layoutRef.current.scale
+      const f = layoutRef.current.scale
+      const targetScale = groupScale * f
       g.scale.setScalar(g.scale.x + (targetScale - g.scale.x) * k)
+      g.position.x += (groupPosition[0] * f - g.position.x) * k
+      g.position.y += (groupPosition[1] * f - g.position.y) * k
+      g.position.z += (groupPosition[2] * f - g.position.z) * k
     }
 
     const speed = 4
