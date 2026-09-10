@@ -17,7 +17,7 @@ export type BrainSide = 'center' | 'right'
 interface SideLayout { screenX: number; brain: BrainLayout }
 const LAYOUTS: Record<BrainSide, SideLayout> = {
   center: { screenX: 0,   brain: { scale: 1 } },
-  right:  { screenX: 0.45, brain: { scale: 0.8 } },   // centre ≈ 72 % of the viewport width; right edge stays inside on 16:10 and wider
+  right:  { screenX: 0.5, brain: { scale: 0.8 } },    // centred in the right half (75 % of the viewport width), mirroring the doc in the left half
 }
 
 const SHIFT_SPEED = 6  // matches BrainPointCloud's layout lerp so shift and scale move together

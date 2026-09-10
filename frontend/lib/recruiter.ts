@@ -37,6 +37,8 @@ const currently: DocGroup = {
   items: [
     { logo: 'waterloo.png', strong: 'University of Waterloo', href: 'https://uwaterloo.ca',
       text: 'Undergraduate Research Assistant · multi-agent LLM systems for healthcare data sensemaking and clinical question decomposition' },
+    { logo: 'laurier.png',  strong: 'Laurier Case Team', href: 'https://wlu.ca',
+      text: 'Delegate · national (DSTRAT) and international case teams', note: '$3k+ won' },
   ],
 }
 

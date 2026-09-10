@@ -103,9 +103,17 @@ function Group({ group }: { group: DocGroup }) {
 }
 
 export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) {
+  // Desktop: the doc owns the left half of the viewport and the brain the right
+  // half. Content is centred in its half both ways; `margin: auto` on the inner
+  // block centres when it fits and degrades to a normal scroll when it doesn't.
   const outer: CSSProperties = isMobile
     ? { position: 'static', width: '100%', padding: '56px 20px 140px' }
-    : { position: 'fixed', left: '5vw', top: 0, bottom: 0, width: '58vw', overflowY: 'auto', padding: '10vh 0 18vh', zIndex: 5 }
+    : { position: 'fixed', left: 0, top: 0, bottom: 0, width: '50vw', overflowY: 'auto',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        padding: '6vh 5vw 110px', zIndex: 5 }
+  const inner: CSSProperties = isMobile
+    ? { maxWidth: 560 }
+    : { maxWidth: 560, width: '100%', margin: 'auto 0' }
 
   return (
     <section
@@ -119,7 +127,7 @@ export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) 
         color:         'var(--fg-2)',
       }}
     >
-      <div style={{ maxWidth: 560 }}>
+      <div style={inner}>
         <Pitch />
 
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
