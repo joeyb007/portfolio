@@ -81,22 +81,28 @@ function Item({ item, glyph, glyphColor, indent }: {
             {item.note}
           </span>
         )}
-        {item.links?.map((l, i) => (
-          <span key={l.label}>
-            {i === 0 ? ' ' : <span style={{ color: 'var(--fg-4)', margin: '0 4px' }}>·</span>}
-            <a
-              href={l.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ ...mono, color: 'var(--fg-3)', fontSize: 9.5, letterSpacing: '0.08em',
-                textTransform: 'uppercase', textDecoration: 'none', marginLeft: i === 0 ? 4 : 0 }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
-            >
-              {l.label} ↗
-            </a>
+        {item.links && item.links.length > 0 && (
+          // The whole group is one unbreakable unit, so it wraps to the next
+          // line as a block instead of splitting an arrow from its label.
+          <span style={{ whiteSpace: 'nowrap', marginLeft: 8 }}>
+            {item.links.map((l, i) => (
+              <span key={l.label}>
+                {i > 0 && <span style={{ color: 'var(--fg-4)', margin: '0 6px' }}>·</span>}
+                <a
+                  href={l.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ ...mono, color: 'var(--fg-3)', fontSize: 9.5, letterSpacing: '0.08em',
+                    textTransform: 'uppercase', textDecoration: 'none' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
+                >
+                  {l.label}{'\u00A0'}↗
+                </a>
+              </span>
+            ))}
           </span>
-        ))}
+        )}
       </span>
     </li>
   )
