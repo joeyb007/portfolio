@@ -10,14 +10,17 @@ import type { SectionId } from '@/lib/regionMap'
 
 export type BrainSide = 'center' | 'right'
 
-// World-unit translation and scale per side, at the default camera
-// (z = 5.5, fov 35). Module-level so the object identity is stable.
-const LAYOUTS: Record<BrainSide, BrainLayout> = {
-  center: { offset: [0, 0, 0],   scale: 1 },
-  right:  { offset: [1.8, 0, 0], scale: 0.85 },
+// Where the brain sits on screen per side. `screenX` is the brain centre in
+// NDC (-1 left … +1 right) and is applied as a camera view offset, so it holds
+// at any aspect ratio; the brain and the orbit target both stay at the origin.
+// Module-level so the object identity is stable.
+interface SideLayout { screenX: number; brain: BrainLayout }
+const LAYOUTS: Record<BrainSide, SideLayout> = {
+  center: { screenX: 0,   brain: { scale: 1 } },
+  right:  { screenX: 0.6, brain: { scale: 0.8 } },
 }
 
-const TARGET_SPEED = 6  // matches BrainPointCloud's layout lerp so target and brain move together
+const SHIFT_SPEED = 6  // matches BrainPointCloud's layout lerp so shift and scale move together
 
 // Projects the active lobe centroid to screen coordinates every frame
 // and fires onScreenPos so the parent can draw the SVG pyramid overlay.
@@ -50,21 +53,22 @@ function LobeTracker({
   return null
 }
 
-// Renders OrbitControls, keeps the orbit target on the brain as it slides,
-// and auto-levels the polar angle back to PI/2 after the user stops dragging.
-// Must live inside Canvas to access useFrame.
+// Renders OrbitControls, slides the projection window so the brain parks at
+// `screenX`, and auto-levels the polar angle back to PI/2 after the user stops
+// dragging. Must live inside Canvas to access useFrame.
 function AutoLevelControls({
   enabled,
-  targetOffset,
+  screenX,
 }: {
-  enabled:      boolean
-  targetOffset: [number, number, number]
+  enabled: boolean
+  screenX: number   // brain centre in NDC x; 0 = viewport centre
 }) {
   const controlsRef        = useRef<OrbitControlsImpl>(null)
   const lastInteractionRef = useRef(0)  // epoch ms of last drag end; 0 = never
   const strengthRef        = useRef(0)  // 0→1 ease-in so leveling isn't abrupt
-  const targetRef          = useRef(targetOffset)
-  useEffect(() => { targetRef.current = targetOffset })
+  const shiftRef           = useRef(0)  // current NDC shift, lerped toward screenX
+  const screenXRef         = useRef(screenX)
+  useEffect(() => { screenXRef.current = screenX })
   const { size } = useThree()
 
   useFrame((state, delta) => {
@@ -74,34 +78,21 @@ function AutoLevelControls({
     const cam    = state.camera as THREE.PerspectiveCamera
     const target = controls.target as THREE.Vector3
 
-    // 1. Glide the orbit target toward the brain's layout offset. OrbitControls
-    //    keeps the camera's spherical offset, so the camera translates with it.
-    const [tx, ty, tz] = targetRef.current
-    if (Math.abs(target.x - tx) + Math.abs(target.y - ty) + Math.abs(target.z - tz) > 1e-4) {
-      const k = Math.min(1, delta * TARGET_SPEED)
-      target.x += (tx - target.x) * k
-      target.y += (ty - target.y) * k
-      target.z += (tz - target.z) * k
-      const was = controls.autoRotate
-      controls.autoRotate = false   // avoid a second auto-rotate step this frame
-      controls.update()
-      controls.autoRotate = was
-    }
-
-    // 2. OrbitControls always looks AT the target, which would put the brain at
-    //    screen centre. Shift the projection window instead so the target lands
-    //    where a world-space translation of `target.x` would have appeared with
-    //    the camera still aimed at the origin: ndc = x / (dist * tan(fov/2) * aspect).
-    const dist = cam.position.distanceTo(target)
-    const halfW = dist * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * cam.aspect
-    const ndcX = halfW > 0 ? target.x / halfW : 0
-    if (Math.abs(ndcX) > 1e-4) {
-      cam.setViewOffset(size.width, size.height, -ndcX * size.width / 2, 0, size.width, size.height)
+    // 1. OrbitControls always looks AT its target (the origin, where the brain
+    //    is), so to park the brain off-centre we shift the projection window
+    //    rather than move anything in world space. A negative x offset shows a
+    //    region to the left of centre, which moves the brain right. Because
+    //    the shift is in the projection matrix, camera.project() stays correct
+    //    for LobeTracker and pointer picking.
+    const ndcX = shiftRef.current
+    shiftRef.current += (screenXRef.current - ndcX) * Math.min(1, delta * SHIFT_SPEED)
+    if (Math.abs(shiftRef.current) > 1e-4) {
+      cam.setViewOffset(size.width, size.height, -shiftRef.current * size.width / 2, 0, size.width, size.height)
     } else if (cam.view?.enabled) {
       cam.clearViewOffset()
     }
 
-    // 3. Auto-level after the user lets go.
+    // 2. Auto-level after the user lets go.
     if (!enabled) return
 
     const elapsed = Date.now() - lastInteractionRef.current
@@ -189,7 +180,7 @@ export default function BrainCanvas({
           onRegionClick={onRegionClick}
           isMobile={isMobile}
           speaking={speaking}
-          layout={layout}
+          layout={layout.brain}
           groupRef={groupRef}
           onRevealDone={() => { setRevealDone(true); onRevealDone?.() }}
           onCentroidsReady={setCentroids}
@@ -203,7 +194,7 @@ export default function BrainCanvas({
           />
         )}
 
-        <AutoLevelControls enabled={revealDone && !isMobile} targetOffset={layout.offset} />
+        <AutoLevelControls enabled={revealDone && !isMobile} screenX={layout.screenX} />
       </Canvas>
     </div>
   )

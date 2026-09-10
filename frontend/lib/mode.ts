@@ -8,6 +8,7 @@ export type Mode      = 'revealing' | 'choosing' | 'animated' | 'minimalistic'
 export type SavedMode = 'animated' | 'minimalistic'
 
 export type ModeAction =
+  | { type: 'INIT'; saved: SavedMode | null; isMobile: boolean }   // seed after mount (URL/storage/viewport are client-only)
   | { type: 'REVEAL_DONE' }
   | { type: 'PICK'; mode: SavedMode }
   | { type: 'TOGGLE' }
@@ -44,6 +45,10 @@ function settledMode(saved: SavedMode | null, isMobile: boolean): Mode {
 
 export function modeReducer(state: ModeState, action: ModeAction): ModeState {
   switch (action.type) {
+    case 'INIT':
+      if (state.mode !== 'revealing') return state
+      return { ...state, saved: action.saved, isMobile: action.isMobile }
+
     case 'REVEAL_DONE':
       if (state.mode !== 'revealing') return state
       return { ...state, mode: settledMode(state.saved, state.isMobile) }

@@ -13,11 +13,10 @@ const GLOW_FALLBACK = '#c9ccd4'   // mirrors --glow in globals.css
 const LAYOUT_SPEED  = 6           // exponential lerp rate; ~2.7 % residual at 0.6 s
 
 export interface BrainLayout {
-  offset: [number, number, number]  // world-unit translation added to the centring base
-  scale:  number                    // multiplier on the centring base scale
+  scale: number   // multiplier on the centring base scale (screen placement is the camera's job, see BrainCanvas)
 }
 
-const CENTER_LAYOUT: BrainLayout = { offset: [0, 0, 0], scale: 1 }
+const CENTER_LAYOUT: BrainLayout = { scale: 1 }
 
 // Bottom-to-top scan order (0 = first to appear, 1 = last)
 const REVEAL_ORDER: Record<string, number> = {
@@ -123,7 +122,7 @@ function buildBlueBrain(scene: THREE.Object3D): SetupResult {
 
   // Compute each lobe's centroid in the GROUP-LOCAL frame (the same frame as
   // the geometry). Consumers must transform it through the group's current
-  // matrixWorld; the group is animated (layout offset/scale) so baking the
+  // matrixWorld; the group's scale is animated (layout) so baking the
   // base transform in here would go stale as soon as it moves.
   const centroids = {} as Record<SectionId, [number, number, number]>
   SECTIONS.forEach(id => {
@@ -251,8 +250,8 @@ export default function BrainPointCloud({
   useFrame((state, delta) => {
     if (!revealDoneRef.current && groupRef.current) {
       // Snap to the centring base — only the scanline animates during reveal.
-      // The layout offset is deliberately ignored here so the reveal is
-      // always centred; the lerp below takes over once it completes.
+      // The layout scale is deliberately ignored here so the reveal is
+      // always full-size; the lerp below takes over once it completes.
       groupRef.current.position.set(...groupPosition)
       groupRef.current.scale.setScalar(groupScale)
 
@@ -292,16 +291,12 @@ export default function BrainPointCloud({
       return  // skip normal highlight logic during reveal
     }
 
-    // Post-reveal: glide the group toward base + layout. Same exponential
+    // Post-reveal: glide the group scale toward base * layout. Same exponential
     // pattern as the colour dim below, tuned to settle in roughly 0.6 s.
     if (groupRef.current) {
-      const { offset, scale } = layoutRef.current
       const k = Math.min(1, delta * LAYOUT_SPEED)
       const g = groupRef.current
-      g.position.x += (groupPosition[0] + offset[0] - g.position.x) * k
-      g.position.y += (groupPosition[1] + offset[1] - g.position.y) * k
-      g.position.z += (groupPosition[2] + offset[2] - g.position.z) * k
-      const targetScale = groupScale * scale
+      const targetScale = groupScale * layoutRef.current.scale
       g.scale.setScalar(g.scale.x + (targetScale - g.scale.x) * k)
     }
 
@@ -310,7 +305,7 @@ export default function BrainPointCloud({
       const isActive  = sectionId === activeSection
       const base      = baseMaterials[sectionId]
       const glow      = glowMaterials[sectionId]
-      const targetDim = isActive ? 1.0 : 0.45
+      const targetDim = isActive ? 0.8 : 0.4   // steel vertex colours are already light; 1.0 clipped to a flat white block
 
       base.color.r += (targetDim - base.color.r) * Math.min(1, delta * speed)
       base.color.g += (targetDim - base.color.g) * Math.min(1, delta * speed)
@@ -319,7 +314,7 @@ export default function BrainPointCloud({
       // While speaking, pulse the active lobe glow between 0.6 and 1.1
       const speakingGlow = isActive && speaking
         ? 0.75 + Math.sin(state.clock.elapsedTime * 6) * 0.35
-        : isActive ? 0.6 : 0
+        : isActive ? 0.3 : 0   // additive on a grey base saturates fast; 0.6 read as a flat white block
       glow.opacity += (speakingGlow - glow.opacity) * Math.min(1, delta * speed)
     })
   })

@@ -88,7 +88,7 @@ function Group({ group }: { group: DocGroup }) {
 
 export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) {
   const outer: CSSProperties = isMobile
-    ? { position: 'static', width: '100%', padding: '32px 20px 140px' }
+    ? { position: 'static', width: '100%', padding: '56px 20px 140px' }
     : { position: 'fixed', left: '5vw', top: 0, bottom: 0, width: '58vw', overflowY: 'auto', padding: '10vh 0 18vh', zIndex: 5 }
 
   return (

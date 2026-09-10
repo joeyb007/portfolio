@@ -196,3 +196,22 @@ describe('storage helpers', () => {
     expect(() => saveMode('minimalistic')).not.toThrow()
   })
 })
+
+describe('INIT', () => {
+  it('seeds saved and isMobile while still revealing', () => {
+    const s = modeReducer(desktop(), { type: 'INIT', saved: 'minimalistic', isMobile: false })
+    expect(s).toEqual({ mode: 'revealing', saved: 'minimalistic', isMobile: false })
+  })
+  it('then REVEAL_DONE lands on the seeded mode', () => {
+    const s = modeReducer(desktop(), { type: 'INIT', saved: 'animated', isMobile: false })
+    expect(modeReducer(s, { type: 'REVEAL_DONE' }).mode).toBe('animated')
+  })
+  it('mobile seed forces minimalistic on REVEAL_DONE regardless of saved', () => {
+    const s = modeReducer(desktop(), { type: 'INIT', saved: 'animated', isMobile: true })
+    expect(modeReducer(s, { type: 'REVEAL_DONE' }).mode).toBe('minimalistic')
+  })
+  it('is ignored once past revealing', () => {
+    const s = desktop({ mode: 'animated', saved: 'animated' })
+    expect(modeReducer(s, { type: 'INIT', saved: 'minimalistic', isMobile: false })).toBe(s)
+  })
+})
