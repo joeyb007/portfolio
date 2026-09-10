@@ -5,12 +5,13 @@ import { REGION_CONFIGS, type SectionId } from '@/lib/regionMap'
 import { PROJECTS } from '@/lib/projects'
 import { getSortedPosts, formatPostDate } from '@/lib/blog'
 import type { HologramBullet } from '@/lib/regionMap'
+import { readToken, GLOW_FALLBACK } from '@/lib/theme'
 
 function parseBold(text: string): React.ReactNode {
   const parts = text.split(/\*\*/)
   return parts.map((p, i) =>
     i % 2 === 1
-      ? <span key={i} style={{ color: '#fff', fontWeight: 600, textShadow: '0 0 8px rgba(0,220,255,0.5)' }}>{p}</span>
+      ? <span key={i} style={{ color: 'var(--fg)', fontWeight: 600, textShadow: '0 0 8px var(--glow-soft)' }}>{p}</span>
       : p
   )
 }
@@ -35,10 +36,10 @@ function Corner({ top, right, bottom, left }: { top?: number; right?: number; bo
       top, right, bottom, left,
       width:        10,
       height:       10,
-      borderTop:    top    != null ? '1px solid rgba(0,220,255,0.7)' : undefined,
-      borderBottom: bottom != null ? '1px solid rgba(0,220,255,0.7)' : undefined,
-      borderLeft:   left   != null ? '1px solid rgba(0,220,255,0.7)' : undefined,
-      borderRight:  right  != null ? '1px solid rgba(0,220,255,0.7)' : undefined,
+      borderTop:    top    != null ? '1px solid var(--line-2)' : undefined,
+      borderBottom: bottom != null ? '1px solid var(--line-2)' : undefined,
+      borderLeft:   left   != null ? '1px solid var(--line-2)' : undefined,
+      borderRight:  right  != null ? '1px solid var(--line-2)' : undefined,
       pointerEvents: 'none',
     }} />
   )
@@ -95,16 +96,18 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
       ;[order[i], order[j]] = [order[j], order[i]]
     }
 
+    const glow = readToken('--glow', GLOW_FALLBACK)
     const draw = (active: number) => {
       ctx.clearRect(0, 0, w, h)
+      ctx.fillStyle = glow
       for (let i = 0; i < active; i++) {
         const idx   = order[i]
         const col   = idx % cols
         const row   = Math.floor(idx / cols)
-        const alpha = (0.25 + Math.random() * 0.6).toFixed(2)
-        ctx.fillStyle = `rgba(0,220,255,${alpha})`
+        ctx.globalAlpha = 0.25 + Math.random() * 0.6
         ctx.fillRect(col * ps, row * ps, ps - 1, ps - 1)
       }
+      ctx.globalAlpha = 1
     }
 
     const t0 = performance.now()
@@ -219,20 +222,20 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
         <div style={{
           opacity:              cardVisible ? 1 : 0,
           transition:           'opacity 0.18s ease',
-          background:           'rgba(0,200,240,0.04)',
+          background:           'var(--surface)',
           backdropFilter:       'blur(6px)',
           WebkitBackdropFilter: 'blur(6px)',
-          border:               '1px solid rgba(0,220,255,0.45)',
+          border:               '1px solid var(--line-2)',
           borderRadius:         '0px',
           padding:              '16px',
           height:               isMobile ? 'auto' : '100%',
           boxSizing:            'border-box',
           boxShadow: [
-            '0 0 0 1px rgba(0,220,255,0.12)',
-            '0 0 14px rgba(0,220,255,0.55)',
-            '0 0 36px rgba(0,220,255,0.2)',
-            '0 0 70px rgba(0,220,255,0.08)',
-            'inset 0 0 24px rgba(0,220,255,0.05)',
+            '0 0 0 1px var(--line)',
+            '0 0 14px var(--glow-soft)',
+            '0 0 36px color-mix(in srgb, var(--glow) 20%, transparent)',
+            '0 0 70px color-mix(in srgb, var(--glow) 8%, transparent)',
+            'inset 0 0 24px color-mix(in srgb, var(--glow) 5%, transparent)',
           ].join(', '),
           position: 'relative',
           overflow: 'hidden',
@@ -241,7 +244,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
           <div style={{
             position:      'absolute',
             inset:         0,
-            background:    'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,220,255,0.025) 3px, rgba(0,220,255,0.025) 6px)',
+            background:    'repeating-linear-gradient(0deg, transparent, transparent 3px, color-mix(in srgb, var(--glow) 3%, transparent) 3px, color-mix(in srgb, var(--glow) 3%, transparent) 6px)',
             borderRadius:  '0px',
             pointerEvents: 'none',
             zIndex:        0,
@@ -253,7 +256,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
             left:          0,
             right:         0,
             height:        64,
-            background:    'linear-gradient(to bottom, transparent, rgba(0,220,255,0.05) 30%, rgba(0,220,255,0.11) 50%, rgba(0,220,255,0.05) 70%, transparent)',
+            background:    'linear-gradient(to bottom, transparent, color-mix(in srgb, var(--glow) 5%, transparent) 30%, color-mix(in srgb, var(--glow) 11%, transparent) 50%, color-mix(in srgb, var(--glow) 5%, transparent) 70%, transparent)',
             animation:     'scanSweep 7s ease-in-out infinite',
             pointerEvents: 'none',
             zIndex:        3,
@@ -268,42 +271,42 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
 
             {/* Section | Lobe — one-line header */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 }}>
-              <p style={{ color: '#fff', fontSize: 15, fontWeight: 700, margin: 0, lineHeight: 1, letterSpacing: '-0.02em', textShadow: '0 0 14px rgba(0,220,255,0.9)', whiteSpace: 'nowrap' }}>
+              <p style={{ color: 'var(--fg)', fontSize: 15, fontWeight: 700, margin: 0, lineHeight: 1, letterSpacing: '-0.02em', textShadow: '0 0 14px var(--glow)', whiteSpace: 'nowrap' }}>
                 {cfg.label}
               </p>
-              <span style={{ color: 'rgba(0,220,255,0.35)', fontSize: 11, fontWeight: 300, flexShrink: 0 }}>|</span>
-              <p style={{ ...mono, fontSize: 8, color: 'rgba(0,220,255,0.7)', margin: 0, lineHeight: 1, whiteSpace: 'nowrap', textShadow: '0 0 8px rgba(0,200,255,0.4)' }}>
+              <span style={{ color: 'var(--fg-4)', fontSize: 11, fontWeight: 300, flexShrink: 0 }}>|</span>
+              <p style={{ ...mono, fontSize: 8, color: 'var(--fg-3)', margin: 0, lineHeight: 1, whiteSpace: 'nowrap', textShadow: '0 0 8px var(--glow-soft)' }}>
                 {cfg.lobe}
               </p>
             </div>
 
             {/* Scientific lobe function */}
-            <p style={{ ...mono, color: 'rgba(0,220,255,0.5)', fontSize: 8, lineHeight: 1.5, margin: '0 0 3px', letterSpacing: '0.06em' }}>
+            <p style={{ ...mono, color: 'var(--fg-3)', fontSize: 8, lineHeight: 1.5, margin: '0 0 3px', letterSpacing: '0.06em' }}>
               {cfg.lobeFunction}
             </p>
             {/* Personal section description */}
-            <p style={{ color: 'rgba(180,230,255,0.65)', fontSize: 9.5, lineHeight: 1.55, margin: '0 0 8px' }}>
+            <p style={{ color: 'var(--fg-2)', fontSize: 9.5, lineHeight: 1.55, margin: '0 0 8px' }}>
               {cfg.sectionDesc}
             </p>
 
-            <div style={{ borderTop: '1px solid rgba(0,220,255,0.15)', margin: '0 0 8px' }} />
+            <div style={{ borderTop: '1px solid var(--line)', margin: '0 0 8px' }} />
 
             {displayed === 'projects' ? (
               // ── Project carousel ────────────────────────────────────────
               <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4, pointerEvents: 'auto' }}>
-                <p style={{ color: '#fff', fontSize: 12, fontWeight: 700, margin: 0, lineHeight: 1.1, letterSpacing: '-0.01em', textShadow: '0 0 10px rgba(0,220,255,0.8)' }}>
+                <p style={{ color: 'var(--fg)', fontSize: 12, fontWeight: 700, margin: 0, lineHeight: 1.1, letterSpacing: '-0.01em', textShadow: '0 0 10px var(--glow)' }}>
                   {PROJECTS[projectIdx].name}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
                   <button
                     onClick={() => { carouselDir.current = 'left'; setProjectIdx(i => (i - 1 + PROJECTS.length) % PROJECTS.length) }}
-                    style={{ ...mono, background: 'none', border: 'none', color: 'rgba(0,220,255,0.6)', cursor: 'pointer', padding: '0 2px', fontSize: 11, lineHeight: 1 }}
+                    style={{ ...mono, background: 'none', border: 'none', color: 'var(--fg-3)', cursor: 'pointer', padding: '0 2px', fontSize: 11, lineHeight: 1 }}
                   >‹</button>
-                  <span style={{ ...mono, color: 'rgba(0,220,255,0.4)', fontSize: 8 }}>{projectIdx + 1}/{PROJECTS.length}</span>
+                  <span style={{ ...mono, color: 'var(--fg-4)', fontSize: 8 }}>{projectIdx + 1}/{PROJECTS.length}</span>
                   <button
                     onClick={() => { carouselDir.current = 'right'; setProjectIdx(i => (i + 1) % PROJECTS.length) }}
-                    style={{ ...mono, background: 'none', border: 'none', color: 'rgba(0,220,255,0.6)', cursor: 'pointer', padding: '0 2px', fontSize: 11, lineHeight: 1 }}
+                    style={{ ...mono, background: 'none', border: 'none', color: 'var(--fg-3)', cursor: 'pointer', padding: '0 2px', fontSize: 11, lineHeight: 1 }}
                   >›</button>
                 </div>
               </div>
@@ -319,7 +322,7 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
               >
                 {/* Tagline */}
                 {PROJECTS[projectIdx].tagline && (
-                  <p style={{ color: 'rgba(150,230,255,0.55)', fontSize: 9, lineHeight: 1.5, margin: '0 0 6px', fontStyle: 'italic',
+                  <p style={{ color: 'var(--fg-3)', fontSize: 9, lineHeight: 1.5, margin: '0 0 6px', fontStyle: 'italic',
                     whiteSpace: 'pre-line', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {PROJECTS[projectIdx].tagline}
                   </p>
@@ -335,8 +338,8 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                       {[...PROJECTS[projectIdx].stack, ...PROJECTS[projectIdx].stack].map((chip, i) => (
                         <span key={i} style={{
                           ...mono, fontSize: 7, padding: '2px 5px', whiteSpace: 'nowrap',
-                          border: '1px solid rgba(0,220,255,0.25)', borderRadius: 3,
-                          color: 'rgba(0,220,255,0.65)', background: 'rgba(0,220,255,0.05)',
+                          border: '1px solid var(--line)', borderRadius: 3,
+                          color: 'var(--fg-3)', background: 'var(--surface)',
                         }}>{chip}</span>
                       ))}
                     </div>
@@ -345,9 +348,9 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
 
                 {/* Description paragraph */}
                 {PROJECTS[projectIdx].bullets[0] && (
-                  <p style={{ color: 'rgba(200,240,255,0.78)', fontSize: 10, lineHeight: 1.6, margin: '0 0 6px',
+                  <p style={{ color: 'var(--fg-2)', fontSize: 10, lineHeight: 1.6, margin: '0 0 6px',
                     whiteSpace: 'pre-line', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'hidden' as any, overflow: 'hidden',
-                    textShadow: '0 0 6px rgba(0,200,255,0.25)' }}>
+                    textShadow: '0 0 6px color-mix(in srgb, var(--glow) 25%, transparent)' }}>
                     {PROJECTS[projectIdx].bullets[0]}
                   </p>
                 )}
@@ -355,13 +358,13 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                 {/* Built so far — ↳ list */}
                 {PROJECTS[projectIdx].builtSoFar && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <p style={{ ...mono, color: 'rgba(0,220,255,0.55)', fontSize: 8, margin: '0 0 3px', fontStyle: 'italic' }}>
+                    <p style={{ ...mono, color: 'var(--fg-3)', fontSize: 8, margin: '0 0 3px', fontStyle: 'italic' }}>
                       • built so far:
                     </p>
                     {PROJECTS[projectIdx].builtSoFar!.map((item, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, paddingLeft: 6 }}>
-                        <span style={{ color: 'rgba(0,220,255,0.35)', fontSize: 9, flexShrink: 0 }}>↳</span>
-                        <span style={{ color: 'rgba(200,240,255,0.85)', fontSize: 10.5, lineHeight: 1.4 }}>{item}</span>
+                        <span style={{ color: 'var(--fg-4)', fontSize: 9, flexShrink: 0 }}>↳</span>
+                        <span style={{ color: 'var(--fg-2)', fontSize: 10.5, lineHeight: 1.4 }}>{item}</span>
                       </div>
                     ))}
                   </div>
@@ -371,25 +374,25 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                 <div style={{ display: 'flex', gap: 12, marginTop: 'auto', pointerEvents: 'auto', flexWrap: 'nowrap' }}>
                   {PROJECTS[projectIdx].github && (
                     <a href={PROJECTS[projectIdx].github} target="_blank" rel="noopener noreferrer"
-                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
+                      style={{ ...mono, color: 'var(--fg-3)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}>
                       GitHub ↗
                     </a>
                   )}
                   {PROJECTS[projectIdx].liveUrl && (
                     <a href={PROJECTS[projectIdx].liveUrl} target="_blank" rel="noopener noreferrer"
-                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
+                      style={{ ...mono, color: 'var(--fg-3)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}>
                       Try it live ↗
                     </a>
                   )}
                   {PROJECTS[projectIdx].youtubeId && (
                     <a href={`https://youtu.be/${PROJECTS[projectIdx].youtubeId}`} target="_blank" rel="noopener noreferrer"
-                      style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}>
+                      style={{ ...mono, color: 'var(--fg-3)', fontSize: 8, textDecoration: 'none', whiteSpace: 'nowrap' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}>
                       Watch demo ↗
                     </a>
                   )}
@@ -405,33 +408,33 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                     href={`/blog/${post.slug}`}
                     style={{
                       textDecoration: 'none', display: 'block', padding: '8px 10px', borderRadius: 6,
-                      background: 'rgba(0,220,255,0.04)', border: '1px solid rgba(0,220,255,0.18)',
+                      background: 'var(--surface)', border: '1px solid var(--line)',
                       transition: 'background 0.18s ease, border-color 0.18s ease',
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(0,220,255,0.08)'
-                      e.currentTarget.style.borderColor = 'rgba(0,220,255,0.4)'
-                      ;(e.currentTarget.querySelectorAll('p')[1] as HTMLElement).style.color = '#fff'
+                      e.currentTarget.style.background = 'var(--surface-2)'
+                      e.currentTarget.style.borderColor = 'var(--line-2)'
+                      ;(e.currentTarget.querySelectorAll('p')[1] as HTMLElement).style.color = 'var(--fg)'
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.background = 'rgba(0,220,255,0.04)'
-                      e.currentTarget.style.borderColor = 'rgba(0,220,255,0.18)'
-                      ;(e.currentTarget.querySelectorAll('p')[1] as HTMLElement).style.color = 'rgba(0,220,255,0.85)'
+                      e.currentTarget.style.background = 'var(--surface)'
+                      e.currentTarget.style.borderColor = 'var(--line)'
+                      ;(e.currentTarget.querySelectorAll('p')[1] as HTMLElement).style.color = 'var(--accent)'
                     }}
                   >
-                    <p style={{ ...mono, color: 'rgba(0,220,255,0.4)', fontSize: 7.5, margin: '0 0 2px' }}>
+                    <p style={{ ...mono, color: 'var(--fg-4)', fontSize: 7.5, margin: '0 0 2px' }}>
                       {formatPostDate(post.date, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
-                    <p style={{ color: 'rgba(0,220,255,0.85)', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4, margin: 0, transition: 'color 0.15s' }}>
+                    <p style={{ color: 'var(--accent)', fontSize: 10.5, fontWeight: 600, lineHeight: 1.4, margin: 0, transition: 'color 0.15s' }}>
                       {post.title}
                     </p>
                   </a>
                 ))}
                 <a
                   href="/blog"
-                  style={{ ...mono, color: 'rgba(0,220,255,0.6)', fontSize: 8, textDecoration: 'none', marginTop: 4 }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#00dcff')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.6)')}
+                  style={{ ...mono, color: 'var(--fg-3)', fontSize: 8, textDecoration: 'none', marginTop: 4 }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
                 >
                   View all posts ↗
                 </a>
@@ -445,18 +448,18 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                 flex: 1, minHeight: 0, overflowY: 'auto',
                 pointerEvents: 'auto',
                 scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(0,220,255,0.25) transparent',
+                scrollbarColor: 'var(--line-2) transparent',
               }}>
                 {cfg.hologramBullets.map((item: HologramBullet, i: number) =>
                   typeof item === 'string' ? (
-                    <p key={i} style={{ color: 'rgba(200,240,255,0.72)', fontSize: 10.5,
-                      lineHeight: 1.7, margin: 0, textShadow: '0 0 6px rgba(0,200,255,0.25)' }}>
+                    <p key={i} style={{ color: 'var(--fg-2)', fontSize: 10.5,
+                      lineHeight: 1.7, margin: 0, textShadow: '0 0 6px color-mix(in srgb, var(--glow) 25%, transparent)' }}>
                       {parseBold(item)}
                     </p>
                   ) : (
                     <div key={i}>
                       {item.category && (
-                        <p style={{ ...mono, color: 'rgba(0,220,255,0.55)', fontSize: 8,
+                        <p style={{ ...mono, color: 'var(--fg-3)', fontSize: 8,
                           margin: '0 0 4px', fontStyle: 'italic' }}>
                           • {item.category}:
                         </p>
@@ -465,9 +468,9 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                         {item.items.map((b, j) => (
                           <div key={j} style={{ paddingLeft: 6 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                              <span style={{ color: 'rgba(0,220,255,0.35)', fontSize: 9, flexShrink: 0 }}>↳</span>
+                              <span style={{ color: 'var(--fg-4)', fontSize: 9, flexShrink: 0 }}>↳</span>
                               {b.note && (
-                                <span style={{ ...mono, color: 'rgba(180,230,255,0.45)', fontSize: 8, flexShrink: 0 }}>
+                                <span style={{ ...mono, color: 'var(--fg-4)', fontSize: 8, flexShrink: 0 }}>
                                   {b.note}
                                 </span>
                               )}
@@ -481,21 +484,21 @@ const HologramCard = forwardRef<HTMLDivElement, Props>(function HologramCard(
                                   target={b.link.startsWith('mailto') ? undefined : '_blank'}
                                   rel="noopener noreferrer"
                                   download={b.link.endsWith('.pdf') ? true : undefined}
-                                  style={{ color: 'rgba(0,220,255,0.8)', fontSize: 10.5, fontWeight: 600,
+                                  style={{ color: 'var(--accent)', fontSize: 10.5, fontWeight: 600,
                                     lineHeight: 1.4, textDecoration: 'none', pointerEvents: 'auto' }}
-                                  onMouseEnter={e => (e.currentTarget.style.color = '#fff')}
-                                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(0,220,255,0.8)')}
+                                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--fg)')}
+                                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--accent)')}
                                 >
                                   {b.text} ↗
                                 </a>
                               ) : (
-                                <span style={{ color: 'rgba(200,240,255,0.85)', fontSize: 10.5, fontWeight: b.logo ? 600 : 400, lineHeight: 1.4 }}>
+                                <span style={{ color: 'var(--fg-2)', fontSize: 10.5, fontWeight: b.logo ? 600 : 400, lineHeight: 1.4 }}>
                                   {b.text}
                                 </span>
                               )}
                             </div>
                             {b.desc && (
-                              <p style={{ color: 'rgba(180,220,255,0.55)', fontSize: 9, lineHeight: 1.5,
+                              <p style={{ color: 'var(--fg-2)', fontSize: 9, lineHeight: 1.5,
                                 margin: '2px 0 0 14px' }}>
                                 {b.desc}
                               </p>

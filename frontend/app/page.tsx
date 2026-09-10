@@ -137,7 +137,7 @@ export default function Home() {
           fontSize:      10,
           letterSpacing: '0.14em',
           textTransform: 'uppercase',
-          color:         'rgba(78,207,255,0.7)',
+          color:         'var(--fg-3)',
           margin:        '0 0 8px',
         }}>
           Builder · MLE · AI Engineer
@@ -145,13 +145,13 @@ export default function Home() {
         <h1 style={{
           fontSize:   'clamp(1.8rem, 4vw, 3rem)',
           fontWeight: 700,
-          color:      '#f0f4ff',
+          color:      'var(--fg)',
           margin:     '0 0 8px',
           lineHeight: 1.1,
         }}>
           Joseph Barbosa
         </h1>
-        <p style={{ color: 'rgba(240,244,255,0.45)', fontSize: 13, margin: '0 0 16px', lineHeight: 1.5 }}>
+        <p style={{ color: 'var(--fg-3)', fontSize: 13, margin: '0 0 16px', lineHeight: 1.5 }}>
           Scroll to explore.
         </p>
 
@@ -197,12 +197,12 @@ export default function Home() {
               aria-label={label}
               download={download ? 'Joseph_Barbosa_Resume.pdf' : undefined}
               style={{
-                color:      'rgba(240,244,255,0.35)',
+                color:      'var(--fg-4)',
                 transition: 'color 0.2s',
                 lineHeight: 0,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(125,216,255,0.9)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,244,255,0.35)')}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--fg-4)')}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 {icon}
@@ -211,13 +211,13 @@ export default function Home() {
           ))}
 
           {/* Waterloo CS Webring — requires joining via PR to github.com/JusGu/uwatering first */}
-          <div style={{ width: 1, height: 16, background: 'rgba(240,244,255,0.2)' }} />
+          <div style={{ width: 1, height: 16, background: 'var(--line)' }} />
           <a
             href="https://cs.uwatering.com/#https://josephbarbosa.com?nav=prev"
             aria-label="Previous in CS Webring"
-            style={{ color: 'rgba(240,244,255,0.35)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(125,216,255,0.9)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,244,255,0.35)')}
+            style={{ color: 'var(--fg-4)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--fg-4)')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="12" x2="5" y2="12" />
@@ -229,18 +229,18 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="CS Webring"
-            style={{ color: 'rgba(240,244,255,0.35)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(125,216,255,0.9)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,244,255,0.35)')}
+            style={{ color: 'var(--fg-4)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--fg-4)')}
           >
             <img src="https://cs.uwatering.com/icon.white.svg" alt="CS Webring" style={{ width: 16, height: 16, display: 'block' }} />
           </a>
           <a
             href="https://cs.uwatering.com/#https://josephbarbosa.com?nav=next"
             aria-label="Next in CS Webring"
-            style={{ color: 'rgba(240,244,255,0.35)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(125,216,255,0.9)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(240,244,255,0.35)')}
+            style={{ color: 'var(--fg-4)', transition: 'color 0.2s', display: 'flex', alignItems: 'center' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--fg-4)')}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <line x1="5" y1="12" x2="19" y2="12" />

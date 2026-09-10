@@ -10,7 +10,7 @@ function renderRichText(text: string): React.ReactNode {
     const match = part.match(/^\[\[(.*?)\]\]$/)
     if (match) {
       return (
-        <span key={i} style={{ color: 'rgba(125,216,255,0.95)', fontWeight: 500 }}>
+        <span key={i} style={{ color: 'var(--accent)', fontWeight: 500 }}>
           {match[1]}
         </span>
       )
@@ -30,8 +30,8 @@ function Tag({ label }: { label: string }) {
   return (
     <span style={{
       ...mono,
-      color:        'rgba(125,216,255,0.6)',
-      border:       '1px solid rgba(125,216,255,0.18)',
+      color:        'var(--fg-3)',
+      border:       '1px solid var(--line)',
       borderRadius: 4,
       padding:      '2px 8px',
       display:      'inline-block',
@@ -44,7 +44,7 @@ function Tag({ label }: { label: string }) {
 function Bullet({ text }: { text: string }) {
   return (
     <li style={{
-      color:      'rgba(240,244,255,0.65)',
+      color:      'var(--fg-2)',
       fontSize:   13,
       lineHeight: 1.7,
       paddingLeft: 4,
@@ -55,14 +55,14 @@ function Bullet({ text }: { text: string }) {
 }
 
 function Divider() {
-  return <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', margin: '20px 0' }} />
+  return <div style={{ borderTop: '1px solid var(--line)', margin: '20px 0' }} />
 }
 
 // ---------------------------------------------------------------------------
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ ...mono, color: 'rgba(125,216,255,0.5)', margin: '0 0 10px' }}>
+    <p style={{ ...mono, color: 'var(--fg-3)', margin: '0 0 10px' }}>
       {children}
     </p>
   )
@@ -75,7 +75,7 @@ function AboutSection({ onSectionOpen }: { onSectionOpen?: (id: SectionId) => vo
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {/* Bio */}
       {about.paragraphs.map((p, i) => (
-        <p key={i} style={{ color: 'rgba(240,244,255,0.65)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>
+        <p key={i} style={{ color: 'var(--fg-2)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>
           {renderRichText(p)}
         </p>
       ))}
@@ -89,14 +89,14 @@ function AboutSection({ onSectionOpen }: { onSectionOpen?: (id: SectionId) => vo
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {about.currently.map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <span style={{ color: 'rgba(240,244,255,0.65)', fontSize: 13, lineHeight: 1.7 }}>
+                  <span style={{ color: 'var(--fg-2)', fontSize: 13, lineHeight: 1.7 }}>
                     {item.prefix}{' '}
                   </span>
                   {item.sectionId ? (
                     <button
                       onClick={() => onSectionOpen?.(item.sectionId as SectionId)}
                       style={{
-                        color: 'rgba(125,216,255,0.95)', fontWeight: 500,
+                        color: 'var(--accent)', fontWeight: 500,
                         background: 'none', border: 'none', padding: 0,
                         cursor: 'pointer', fontSize: 13, fontFamily: 'inherit',
                       }}
@@ -105,13 +105,13 @@ function AboutSection({ onSectionOpen }: { onSectionOpen?: (id: SectionId) => vo
                     </button>
                   ) : item.href ? (
                     <a href={item.href} target="_blank" rel="noopener noreferrer"
-                      style={{ color: 'rgba(125,216,255,0.95)', fontWeight: 500, textDecoration: 'none' }}>
+                      style={{ color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}>
                       {item.entity}
                     </a>
                   ) : (
-                    <span style={{ color: 'rgba(125,216,255,0.95)', fontWeight: 500 }}>{item.entity}</span>
+                    <span style={{ color: 'var(--accent)', fontWeight: 500 }}>{item.entity}</span>
                   )}
-                  <span style={{ color: 'rgba(240,244,255,0.65)', fontSize: 13, lineHeight: 1.7 }}>
+                  <span style={{ color: 'var(--fg-2)', fontSize: 13, lineHeight: 1.7 }}>
                     {item.suffix}
                   </span>
                 </div>
@@ -128,14 +128,14 @@ function AboutSection({ onSectionOpen }: { onSectionOpen?: (id: SectionId) => vo
           <div>
             <SectionHeading>Education</SectionHeading>
             <div style={{
-              background:   'rgba(125,216,255,0.04)',
-              border:       '1px solid rgba(125,216,255,0.1)',
+              background:   'var(--surface)',
+              border:       '1px solid var(--line)',
               borderRadius: 10,
               padding:      '14px 16px',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{ ...mono, color: 'rgba(125,216,255,0.6)' }}>{about.education.program}</span>
-                <span style={{ ...mono, color: 'rgba(240,244,255,0.3)' }}>{about.education.period}</span>
+                <span style={{ ...mono, color: 'var(--fg-3)' }}>{about.education.program}</span>
+                <span style={{ ...mono, color: 'var(--fg-4)' }}>{about.education.period}</span>
               </div>
 
               {/* logo | name+degree × name+degree | logo */}
@@ -147,18 +147,18 @@ function AboutSection({ onSectionOpen }: { onSectionOpen?: (id: SectionId) => vo
                     <img src={left.logo} alt={left.name} style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
                   )}
                   <div>
-                    <p style={{ color: '#f0f4ff', fontSize: 12, fontWeight: 600, margin: '0 0 1px', lineHeight: 1.3 }}>{left?.name}</p>
-                    <p style={{ color: 'rgba(240,244,255,0.4)', fontSize: 11, margin: 0 }}>{left?.degree}</p>
+                    <p style={{ color: 'var(--fg)', fontSize: 12, fontWeight: 600, margin: '0 0 1px', lineHeight: 1.3 }}>{left?.name}</p>
+                    <p style={{ color: 'var(--fg-3)', fontSize: 11, margin: 0 }}>{left?.degree}</p>
                   </div>
                 </div>
 
-                <span style={{ color: 'rgba(240,244,255,0.2)', fontSize: 14, flexShrink: 0 }}>×</span>
+                <span style={{ color: 'var(--fg-4)', fontSize: 14, flexShrink: 0 }}>×</span>
 
                 {/* Right school */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, justifyContent: 'flex-end' }}>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ color: '#f0f4ff', fontSize: 12, fontWeight: 600, margin: '0 0 1px', lineHeight: 1.3 }}>{right?.name}</p>
-                    <p style={{ color: 'rgba(240,244,255,0.4)', fontSize: 11, margin: 0 }}>{right?.degree}</p>
+                    <p style={{ color: 'var(--fg)', fontSize: 12, fontWeight: 600, margin: '0 0 1px', lineHeight: 1.3 }}>{right?.name}</p>
+                    <p style={{ color: 'var(--fg-3)', fontSize: 11, margin: 0 }}>{right?.degree}</p>
                   </div>
                   {right?.logo && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -180,8 +180,8 @@ function AboutSection({ onSectionOpen }: { onSectionOpen?: (id: SectionId) => vo
             <div style={{ display: 'flex', gap: 24 }}>
               {about.highlights.map(({ label, value }) => (
                 <div key={label}>
-                  <p style={{ ...mono, color: 'rgba(125,216,255,0.5)', margin: '0 0 4px' }}>{label}</p>
-                  <p style={{ color: '#f0f4ff', fontSize: 13, margin: 0 }}>{value}</p>
+                  <p style={{ ...mono, color: 'var(--fg-3)', margin: '0 0 4px' }}>{label}</p>
+                  <p style={{ color: 'var(--fg)', fontSize: 13, margin: 0 }}>{value}</p>
                 </div>
               ))}
             </div>
@@ -209,20 +209,20 @@ function ExperienceSection() {
                 />
               )}
               <div>
-                <p style={{ color: '#f0f4ff', fontSize: 15, fontWeight: 600, margin: '0 0 2px' }}>
+                <p style={{ color: 'var(--fg)', fontSize: 15, fontWeight: 600, margin: '0 0 2px' }}>
                   {entry.role}
                 </p>
-                <p style={{ ...mono, color: 'rgba(125,216,255,0.7)', margin: 0 }}>
+                <p style={{ ...mono, color: 'var(--fg-3)', margin: 0 }}>
                   {entry.company}{entry.location ? ` · ${entry.location}` : ''}
                 </p>
               </div>
             </div>
-            <p style={{ ...mono, color: 'rgba(240,244,255,0.35)', margin: 0, whiteSpace: 'nowrap' }}>
+            <p style={{ ...mono, color: 'var(--fg-4)', margin: 0, whiteSpace: 'nowrap' }}>
               {entry.period}
             </p>
           </div>
           {entry.description && (
-            <p style={{ color: 'rgba(240,244,255,0.55)', fontSize: 13, lineHeight: 1.7, margin: '8px 0' }}>
+            <p style={{ color: 'var(--fg-2)', fontSize: 13, lineHeight: 1.7, margin: '8px 0' }}>
               {entry.description}
             </p>
           )}
@@ -235,7 +235,7 @@ function ExperienceSection() {
             {entry.tags.map(t => <Tag key={t} label={t} />)}
             {entry.caseStudy && (
               <a href={entry.caseStudy} target="_blank" rel="noopener noreferrer"
-                style={{ ...mono, color: 'rgba(125,216,255,0.6)', textDecoration: 'none', marginLeft: 4 }}>
+                style={{ ...mono, color: 'var(--fg-3)', textDecoration: 'none', marginLeft: 4 }}>
                 Case study ↗
               </a>
             )}
@@ -253,23 +253,23 @@ function ProjectsSection() {
         <div key={i}>
           {i > 0 && <Divider />}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, gap: 12 }}>
-            <p style={{ color: '#f0f4ff', fontSize: 15, fontWeight: 600, margin: 0 }}>
+            <p style={{ color: 'var(--fg)', fontSize: 15, fontWeight: 600, margin: 0 }}>
               {entry.name}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
               {entry.link && (
-                <a href={entry.link} target="_blank" rel="noopener noreferrer" style={{ ...mono, color: 'rgba(125,216,255,0.6)', textDecoration: 'none' }}>
+                <a href={entry.link} target="_blank" rel="noopener noreferrer" style={{ ...mono, color: 'var(--fg-3)', textDecoration: 'none' }}>
                   Live ↗
                 </a>
               )}
               {entry.github && (
-                <a href={entry.github} target="_blank" rel="noopener noreferrer" style={{ ...mono, color: 'rgba(125,216,255,0.6)', textDecoration: 'none' }}>
+                <a href={entry.github} target="_blank" rel="noopener noreferrer" style={{ ...mono, color: 'var(--fg-3)', textDecoration: 'none' }}>
                   GitHub ↗
                 </a>
               )}
             </div>
           </div>
-          <p style={{ color: 'rgba(240,244,255,0.55)', fontSize: 13, lineHeight: 1.7, margin: '0 0 10px' }}>
+          <p style={{ color: 'var(--fg-2)', fontSize: 13, lineHeight: 1.7, margin: '0 0 10px' }}>
             {entry.description}
           </p>
           {entry.bullets && entry.bullets.length > 0 && (
@@ -291,13 +291,13 @@ function ProjectsSection() {
             {entry.tags.map(t => <Tag key={t} label={t} />)}
             {entry.link && (
               <a href={entry.link} target="_blank" rel="noopener noreferrer"
-                style={{ ...mono, color: 'rgba(125,216,255,0.6)', textDecoration: 'none', marginLeft: 4 }}>
+                style={{ ...mono, color: 'var(--fg-3)', textDecoration: 'none', marginLeft: 4 }}>
                 Live ↗
               </a>
             )}
             {entry.github && (
               <a href={entry.github} target="_blank" rel="noopener noreferrer"
-                style={{ ...mono, color: 'rgba(125,216,255,0.6)', textDecoration: 'none' }}>
+                style={{ ...mono, color: 'var(--fg-3)', textDecoration: 'none' }}>
                 GitHub ↗
               </a>
             )}
@@ -367,7 +367,7 @@ function SlidingCarousel({ photos }: { photos: { src: string; caption?: string }
                 background: 'rgba(0,0,0,0.45)',
                 padding:    '6px 10px',
               }}>
-                <p style={{ color: '#f0f4ff', fontSize: 11, margin: 0, lineHeight: 1.4 }}>{caption}</p>
+                <p style={{ color: 'var(--fg)', fontSize: 11, margin: 0, lineHeight: 1.4 }}>{caption}</p>
               </div>
             )}
           </div>
@@ -401,8 +401,8 @@ function SpotifyWidget() {
         display:      'flex',
         alignItems:   'center',
         gap:          10,
-        background:   'rgba(125,216,255,0.04)',
-        border:       '1px solid rgba(125,216,255,0.1)',
+        background:   'var(--surface)',
+        border:       '1px solid var(--line)',
         borderRadius: 8,
         padding:      '10px 12px',
         textDecoration: 'none',
@@ -412,16 +412,16 @@ function SpotifyWidget() {
         // eslint-disable-next-line @next/next/no-img-element
         <img src={track.albumArt} alt="album art" style={{ width: 36, height: 36, borderRadius: 4, flexShrink: 0 }} />
       ) : (
-        <div style={{ width: 36, height: 36, borderRadius: 4, background: 'rgba(125,216,255,0.08)', flexShrink: 0 }} />
+        <div style={{ width: 36, height: 36, borderRadius: 4, background: 'var(--surface-2)', flexShrink: 0 }} />
       )}
       <div style={{ minWidth: 0 }}>
-        <p style={{ ...mono, color: 'rgba(125,216,255,0.5)', margin: '0 0 3px' }}>
+        <p style={{ ...mono, color: 'var(--fg-3)', margin: '0 0 3px' }}>
           {track?.isPlaying ? '▶ Now Playing' : 'Last Played'}
         </p>
-        <p style={{ color: '#f0f4ff', fontSize: 12, fontWeight: 600, margin: '0 0 1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <p style={{ color: 'var(--fg)', fontSize: 12, fontWeight: 600, margin: '0 0 1px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {track?.title ?? '—'}
         </p>
-        <p style={{ color: 'rgba(240,244,255,0.45)', fontSize: 11, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <p style={{ color: 'var(--fg-3)', fontSize: 11, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {track?.artist ?? '—'}
         </p>
       </div>
@@ -442,7 +442,7 @@ function PodcastShelf({ podcasts }: { podcasts: { name: string; href: string; co
             style={{ flex: 1, textDecoration: 'none' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={cover} alt={name} style={{ width: '100%', aspectRatio: '1/1', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
-            <p style={{ color: 'rgba(240,244,255,0.5)', fontSize: 10, margin: '5px 0 0', textAlign: 'center', lineHeight: 1.3 }}>{name}</p>
+            <p style={{ color: 'var(--fg-3)', fontSize: 10, margin: '5px 0 0', textAlign: 'center', lineHeight: 1.3 }}>{name}</p>
           </a>
         ))}
       </div>
@@ -454,7 +454,7 @@ function PersonalSection() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {personal.paragraphs.map((p, i) => (
-        <p key={i} style={{ color: 'rgba(240,244,255,0.65)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>
+        <p key={i} style={{ color: 'var(--fg-2)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>
           {p}
         </p>
       ))}
@@ -463,8 +463,8 @@ function PersonalSection() {
           <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
             <span style={{ fontSize: 20, lineHeight: 1 }}>{emoji}</span>
             <div>
-              <p style={{ color: '#f0f4ff', fontSize: 13, fontWeight: 600, margin: '0 0 2px' }}>{label}</p>
-              <p style={{ color: 'rgba(240,244,255,0.55)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{description}</p>
+              <p style={{ color: 'var(--fg)', fontSize: 13, fontWeight: 600, margin: '0 0 2px' }}>{label}</p>
+              <p style={{ color: 'var(--fg-2)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>{description}</p>
             </div>
           </div>
         ))}
@@ -476,13 +476,13 @@ function PersonalSection() {
           <div>
             <SectionHeading>On My Mind</SectionHeading>
             <div style={{
-              background:   'rgba(125,216,255,0.03)',
-              border:       '1px solid rgba(125,216,255,0.08)',
-              borderLeft:   '2px solid rgba(125,216,255,0.35)',
+              background:   'var(--surface)',
+              border:       '1px solid var(--line)',
+              borderLeft:   '2px solid var(--line-2)',
               borderRadius: '0 8px 8px 0',
               padding:      '12px 16px',
             }}>
-              <p style={{ color: 'rgba(240,244,255,0.75)', fontSize: 13, lineHeight: 1.75, margin: 0, fontStyle: 'italic' }}>
+              <p style={{ color: 'var(--fg-2)', fontSize: 13, lineHeight: 1.75, margin: 0, fontStyle: 'italic' }}>
                 {personal.onMind}
               </p>
             </div>
@@ -519,14 +519,14 @@ function ContactSection() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {contact.paragraphs.map((p, i) => (
-        <p key={i} style={{ color: 'rgba(240,244,255,0.65)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>
+        <p key={i} style={{ color: 'var(--fg-2)', fontSize: 14, lineHeight: 1.75, margin: 0 }}>
           {p}
         </p>
       ))}
       <Divider />
       <a
         href={`mailto:${contact.email}`}
-        style={{ color: '#7dd8ff', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}
+        style={{ color: 'var(--accent)', fontSize: 14, textDecoration: 'none', fontWeight: 500 }}
       >
         {contact.email}
       </a>
@@ -537,7 +537,7 @@ function ContactSection() {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ ...mono, color: 'rgba(125,216,255,0.6)', textDecoration: 'none' }}
+            style={{ ...mono, color: 'var(--fg-3)', textDecoration: 'none' }}
           >
             {label} ↗
           </a>

@@ -45,9 +45,9 @@ export default function PyramidOverlay({ lobe, cardEl }: Props) {
           cx={ax} cy={ay} r={dist}
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0%"   stopColor="#00dcff" stopOpacity={0.12} />
-          <stop offset="50%"  stopColor="#00dcff" stopOpacity={0.04} />
-          <stop offset="100%" stopColor="#00dcff" stopOpacity={0}    />
+          <stop offset="0%"   style={{ stopColor: 'var(--glow)' }} stopOpacity={0.12} />
+          <stop offset="50%"  style={{ stopColor: 'var(--glow)' }} stopOpacity={0.04} />
+          <stop offset="100%" style={{ stopColor: 'var(--glow)' }} stopOpacity={0}    />
         </radialGradient>
 
         {/*
@@ -66,12 +66,12 @@ export default function PyramidOverlay({ lobe, cardEl }: Props) {
 
         {/* Edge line gradients: lobe end matches card's 0.55 tight glow, card end fades */}
         <linearGradient id="edgeGradTop" x1={ax} y1={ay} x2={bx} y2={bt} gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#00dcff" stopOpacity={0.55} />
-          <stop offset="100%" stopColor="#00dcff" stopOpacity={0.12} />
+          <stop offset="0%"   style={{ stopColor: 'var(--glow)' }} stopOpacity={0.55} />
+          <stop offset="100%" style={{ stopColor: 'var(--glow)' }} stopOpacity={0.12} />
         </linearGradient>
         <linearGradient id="edgeGradBot" x1={ax} y1={ay} x2={bx} y2={bb} gradientUnits="userSpaceOnUse">
-          <stop offset="0%"   stopColor="#00dcff" stopOpacity={0.55} />
-          <stop offset="100%" stopColor="#00dcff" stopOpacity={0.12} />
+          <stop offset="0%"   style={{ stopColor: 'var(--glow)' }} stopOpacity={0.55} />
+          <stop offset="100%" style={{ stopColor: 'var(--glow)' }} stopOpacity={0.12} />
         </linearGradient>
       </defs>
 
@@ -93,7 +93,7 @@ export default function PyramidOverlay({ lobe, cardEl }: Props) {
       {/* Dot at the lobe apex — brightness matches the card's 14px tight glow */}
       <circle
         cx={ax} cy={ay} r={2.5}
-        fill="#00dcff" fillOpacity={0.9}
+        style={{ fill: 'var(--glow)' }} fillOpacity={0.9}
         filter={`url(#${glowId})`}
       />
     </svg>

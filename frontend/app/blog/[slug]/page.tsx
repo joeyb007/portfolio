@@ -29,13 +29,13 @@ export default async function BlogPostPage({ params }: Props) {
       <p style={{
         fontFamily: 'var(--font-geist-mono), monospace', fontSize: 10.5,
         letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: 'rgba(0,220,255,0.5)', margin: '0 0 10px',
+        color: 'var(--fg-3)', margin: '0 0 10px',
       }}>
         {formatPostDate(post.date, { year: 'numeric', month: 'long', day: 'numeric' })}
       </p>
       <h1 style={{
-        color: '#fff', fontSize: 30, fontWeight: 700, margin: '0 0 28px', lineHeight: 1.25,
-        letterSpacing: '-0.01em', textShadow: '0 0 14px rgba(0,220,255,0.4)',
+        color: 'var(--fg)', fontSize: 30, fontWeight: 700, margin: '0 0 28px', lineHeight: 1.25,
+        letterSpacing: '-0.01em', textShadow: '0 0 14px var(--glow-soft)',
       }}>
         {post.title}
       </h1>
