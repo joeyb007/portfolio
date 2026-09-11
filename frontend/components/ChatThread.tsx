@@ -178,6 +178,8 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
 
   if (messages.length === 0 && !loading) return null
 
+  const isPanel = placement === 'panel' && !isMobile
+
   const latestAudioId = [...messages]
     .reverse()
     .find(m => m.role === 'assistant' && m.audio)?.id ?? ''
@@ -198,8 +200,19 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
           0%, 100% { opacity: 0.3; }
           50%       { opacity: 1;   }
         }
+        @keyframes panelOpen {
+          from { opacity: 0; transform: translateY(24px) scaleY(0.6); }
+          to   { opacity: 1; transform: translateY(0)    scaleY(1);   }
+        }
+        @keyframes bubbleIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .chat-panel, .chat-bubble { animation: none !important; }
+        }
       `}</style>
-      <div style={{
+      <div className={`chat-scroll${isPanel ? ' chat-panel' : ''}`} style={{
         position:      'fixed',
         bottom:        isMobile ? 76 : 72,
         zIndex:        39,
@@ -207,16 +220,18 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
         display:       'flex',
         flexDirection: 'column',
         gap:           10,
-        ...(placement === 'panel' && !isMobile
+        ...(isPanel
           ? {
-              left:         'calc(50vw + 24px)',
-              width:        'calc(50vw - 48px)',
-              maxHeight:    '46vh',
-              padding:      '14px 16px',
-              background:   'color-mix(in srgb, var(--surface) 96%, transparent)',
-              border:       '1px solid var(--line)',
-              borderRadius: 10,
-              boxSizing:    'border-box' as const,
+              left:            'calc(50vw + 24px)',
+              width:           'calc(50vw - 48px)',
+              height:          '46vh',                 // full height from the first message; content anchors to the bottom
+              padding:         '14px 16px',
+              background:      'color-mix(in srgb, var(--surface) 96%, transparent)',
+              border:          '1px solid var(--line)',
+              borderRadius:    10,
+              boxSizing:       'border-box' as const,
+              transformOrigin: 'bottom center',
+              animation:       'panelOpen 0.45s cubic-bezier(.2,.8,.2,1) both',
             }
           : {
               left:      isMobile ? '2vw' : '5vw',
@@ -225,10 +240,13 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
               padding:   '12px 0',
             }),
       }}>
+        {isPanel && <div aria-hidden style={{ marginTop: 'auto' }} />}
         {messages.map((m) => (
           <div
             key={m.id}
+            className="chat-bubble"
             style={{
+              animation:      'bubbleIn 0.35s cubic-bezier(.2,.8,.2,1) both',
               alignSelf:      m.role === 'user' ? 'flex-end' : 'flex-start',
               maxWidth:       '85%',
               padding:        '10px 14px',
@@ -278,7 +296,8 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
         ))}
 
         {loading && (
-          <div style={{
+          <div className="chat-bubble" style={{
+            animation:   'bubbleIn 0.35s cubic-bezier(.2,.8,.2,1) both',
             alignSelf:   'flex-start',
             display:     'flex',
             alignItems:  'center',
