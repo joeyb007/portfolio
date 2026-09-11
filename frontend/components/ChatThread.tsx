@@ -224,14 +224,15 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
           ? {
               left:            'calc(50vw + 24px)',
               width:           'calc(50vw - 48px)',
-              height:          '46vh',                 // full height from the first message; content anchors to the bottom
+              height:          '40vh',                 // full height from the first message; content anchors to the bottom
               padding:         '14px 16px',
               background:      'color-mix(in srgb, var(--surface) 96%, transparent)',
               border:          '1px solid var(--line)',
               borderRadius:    10,
               boxSizing:       'border-box' as const,
               transformOrigin: 'bottom center',
-              animation:       'panelOpen 0.45s cubic-bezier(.2,.8,.2,1) both',
+              // Delayed so the brain finishes lifting (~0.4 s) before the panel rises into the space it left.
+              animation:       'panelOpen 0.45s cubic-bezier(.2,.8,.2,1) 0.4s both',
             }
           : {
               left:      isMobile ? '2vw' : '5vw',

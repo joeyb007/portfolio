@@ -18,7 +18,7 @@ interface SideLayout { screenX: number; screenY: number; brain: BrainLayout }
 const LAYOUTS: Record<BrainSide, SideLayout> = {
   center:     { screenX: 0,   screenY: 0,    brain: { scale: 1 } },
   right:      { screenX: 0.5, screenY: 0,    brain: { scale: 0.8 } },   // centred in the right half (75 % of the viewport width), mirroring the doc in the left half
-  'right-up': { screenX: 0.5, screenY: 0.42, brain: { scale: 0.55 } },  // lifted and shrunk so the chat panel fits beneath it
+  'right-up': { screenX: 0.5, screenY: 0.5,  brain: { scale: 0.52 } },  // lifted and shrunk so the chat panel fits beneath it with breathing room
 }
 
 const SHIFT_SPEED = 6  // matches BrainPointCloud's layout lerp so shift and scale move together
