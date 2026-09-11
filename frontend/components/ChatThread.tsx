@@ -16,6 +16,8 @@ interface Props {
   loading:     boolean
   isMobile?:   boolean
   onSpeaking?: (speaking: boolean) => void
+  /** 'float' (default) overlays the lower-left; 'panel' is an opaque, self-scrolling segment in the right half (Minimalistic mode). */
+  placement?:  'float' | 'panel'
 }
 
 // ── Audio waveform player ─────────────────────────────────────────────────────
@@ -151,7 +153,7 @@ function TypewriterText({ text, isNew, onDone }: { text: string; isNew: boolean;
 
 // ── Chat thread ───────────────────────────────────────────────────────────────
 
-export default function ChatThread({ messages, loading, isMobile, onSpeaking }: Props) {
+export default function ChatThread({ messages, loading, isMobile, onSpeaking, placement = 'float' }: Props) {
   const bottomRef      = useRef<HTMLDivElement>(null)
   const handleSpeaking = useCallback((s: boolean) => onSpeaking?.(s), [onSpeaking])
   const [seenIds,      setSeenIds]      = useState<Set<string>>(new Set())
@@ -200,15 +202,28 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking }: 
       <div style={{
         position:      'fixed',
         bottom:        isMobile ? 76 : 72,
-        left:          isMobile ? '2vw' : '5vw',
         zIndex:        39,
-        width:         isMobile ? '96vw' : 'min(420px, 90vw)',
-        maxHeight:     isMobile ? '35vh' : '40vh',
         overflowY:     'auto',
         display:       'flex',
         flexDirection: 'column',
         gap:           10,
-        padding:       '12px 0',
+        ...(placement === 'panel' && !isMobile
+          ? {
+              left:         'calc(50vw + 24px)',
+              width:        'calc(50vw - 48px)',
+              maxHeight:    '46vh',
+              padding:      '14px 16px',
+              background:   'color-mix(in srgb, var(--surface) 96%, transparent)',
+              border:       '1px solid var(--line)',
+              borderRadius: 10,
+              boxSizing:    'border-box' as const,
+            }
+          : {
+              left:      isMobile ? '2vw' : '5vw',
+              width:     isMobile ? '96vw' : 'min(420px, 90vw)',
+              maxHeight: isMobile ? '35vh' : '40vh',
+              padding:   '12px 0',
+            }),
       }}>
         {messages.map((m) => (
           <div

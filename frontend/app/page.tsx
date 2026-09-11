@@ -36,7 +36,8 @@ export default function Home() {
   // Animated pages through sections, so one is always lit. Minimalistic has no
   // card to justify a lit lobe, so only a chat reply lights one.
   const brainSection = mode === 'animated' ? activeSectionId : chatSectionId
-  const brainSide = mode === 'minimalistic' ? 'right' : 'center'
+  // In Minimalistic the thread is a panel under the brain, so the brain lifts while a conversation is open.
+  const brainSide = mode !== 'minimalistic' ? 'center' : messages.length > 0 ? 'right-up' : 'right'
 
   const revealDone = useCallback(() => {
     dispatch({ type: 'REVEAL_DONE' })
@@ -171,6 +172,7 @@ export default function Home() {
               loading={chatLoading}
               isMobile={isMobile}
               onSpeaking={setSpeaking}
+              placement={mode === 'minimalistic' ? 'panel' : 'float'}
             />
             <ChatBar
               onSend={handleSend}

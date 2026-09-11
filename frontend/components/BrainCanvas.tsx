@@ -8,16 +8,17 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import BrainPointCloud, { type BrainLayout } from './BrainPointCloud'
 import type { SectionId } from '@/lib/regionMap'
 
-export type BrainSide = 'center' | 'right'
+export type BrainSide = 'center' | 'right' | 'right-up'
 
 // Where the brain sits on screen per side. `screenX` is the brain centre in
 // NDC (-1 left … +1 right) and is applied as a camera view offset, so it holds
 // at any aspect ratio; the brain and the orbit target both stay at the origin.
 // Module-level so the object identity is stable.
-interface SideLayout { screenX: number; brain: BrainLayout }
+interface SideLayout { screenX: number; screenY: number; brain: BrainLayout }
 const LAYOUTS: Record<BrainSide, SideLayout> = {
-  center: { screenX: 0,   brain: { scale: 1 } },
-  right:  { screenX: 0.5, brain: { scale: 0.8 } },    // centred in the right half (75 % of the viewport width), mirroring the doc in the left half
+  center:     { screenX: 0,   screenY: 0,    brain: { scale: 1 } },
+  right:      { screenX: 0.5, screenY: 0,    brain: { scale: 0.8 } },   // centred in the right half (75 % of the viewport width), mirroring the doc in the left half
+  'right-up': { screenX: 0.5, screenY: 0.42, brain: { scale: 0.55 } },  // lifted and shrunk so the chat panel fits beneath it
 }
 
 const SHIFT_SPEED = 6  // matches BrainPointCloud's layout lerp so shift and scale move together
@@ -59,16 +60,18 @@ function LobeTracker({
 function AutoLevelControls({
   enabled,
   screenX,
+  screenY,
 }: {
   enabled: boolean
-  screenX: number   // brain centre in NDC x; 0 = viewport centre
+  screenX: number   // brain centre in NDC x; 0 = viewport centre, +1 = right edge
+  screenY: number   // brain centre in NDC y; 0 = viewport centre, +1 = top edge
 }) {
   const controlsRef        = useRef<OrbitControlsImpl>(null)
   const lastInteractionRef = useRef(0)  // epoch ms of last drag end; 0 = never
   const strengthRef        = useRef(0)  // 0→1 ease-in so leveling isn't abrupt
-  const shiftRef           = useRef(0)  // current NDC shift, lerped toward screenX
-  const screenXRef         = useRef(screenX)
-  useEffect(() => { screenXRef.current = screenX })
+  const shiftRef           = useRef({ x: 0, y: 0 })  // current NDC shift, lerped toward screenX/Y
+  const targetRef          = useRef({ x: screenX, y: screenY })
+  useEffect(() => { targetRef.current = { x: screenX, y: screenY } })
   const { size } = useThree()
 
   useFrame((state, delta) => {
@@ -84,10 +87,12 @@ function AutoLevelControls({
     //    region to the left of centre, which moves the brain right. Because
     //    the shift is in the projection matrix, camera.project() stays correct
     //    for LobeTracker and pointer picking.
-    const ndcX = shiftRef.current
-    shiftRef.current += (screenXRef.current - ndcX) * Math.min(1, delta * SHIFT_SPEED)
-    if (Math.abs(shiftRef.current) > 1e-4) {
-      cam.setViewOffset(size.width, size.height, -shiftRef.current * size.width / 2, 0, size.width, size.height)
+    const sh = shiftRef.current, k = Math.min(1, delta * SHIFT_SPEED)
+    sh.x += (targetRef.current.x - sh.x) * k
+    sh.y += (targetRef.current.y - sh.y) * k
+    if (Math.abs(sh.x) > 1e-4 || Math.abs(sh.y) > 1e-4) {
+      // A positive y offset shows a region below centre, which moves the brain up.
+      cam.setViewOffset(size.width, size.height, -sh.x * size.width / 2, sh.y * size.height / 2, size.width, size.height)
     } else if (cam.view?.enabled) {
       cam.clearViewOffset()
     }
@@ -194,7 +199,7 @@ export default function BrainCanvas({
           />
         )}
 
-        <AutoLevelControls enabled={revealDone && !isMobile} screenX={layout.screenX} />
+        <AutoLevelControls enabled={revealDone && !isMobile} screenX={layout.screenX} screenY={layout.screenY} />
       </Canvas>
     </div>
   )
