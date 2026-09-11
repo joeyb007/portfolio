@@ -5,7 +5,7 @@ interface Props {
   hidden:   boolean   // fades out once a conversation starts
 }
 
-// Hero block for Animated mode: kicker, name, social links, CS webring.
+// Hero block for Animated mode: name, social links, CS webring.
 export default function Hero({ isMobile, hidden }: Props) {
   return (
     <>
@@ -21,16 +21,6 @@ export default function Hero({ isMobile, hidden }: Props) {
           pointerEvents: hidden ? 'none' : 'auto',
         }}
       >
-        <p style={{
-          fontFamily:    'var(--font-geist-mono), monospace',
-          fontSize:      10,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          color:         'var(--fg-3)',
-          margin:        '0 0 8px',
-        }}>
-          Builder · MLE · AI Engineer
-        </p>
         <h1 style={{
           fontSize:   'clamp(1.8rem, 4vw, 3rem)',
           fontWeight: 700,
