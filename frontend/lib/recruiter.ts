@@ -76,7 +76,7 @@ export const RECRUITER: RecruiterDoc = {
     { strong: 'Waterloo', logo: 'waterloo.png', href: 'https://uwaterloo.ca' }, ' and ',
     { strong: 'Laurier',  logo: 'laurier.png',  href: 'https://wlu.ca' },
     '. I build at the intersection of applied agentic AI, ML research, and product, and I\'m looking for Winter 2027 internships. ',
-    { strong: 'View my resume ↓', href: '/resume.pdf', download: true },
+    { strong: 'Resume ↗', href: '/resume.pdf', download: true },
   ],
   groups: [currently, previously, projects, writing],
   links: [
