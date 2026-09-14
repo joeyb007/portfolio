@@ -42,8 +42,9 @@ describe('RECRUITER completeness', () => {
 
   it('has the authored pitch / currently / previously / links', () => {
     const entities = RECRUITER.pitch.filter((s): s is Exclude<typeof s, string> => typeof s !== 'string')
-    expect(entities.map(e => e.strong)).toEqual(['Joseph Barbosa', 'Waterloo', 'Laurier'])
-    expect(entities.map(e => e.logo)).toEqual([undefined, 'waterloo.png', 'laurier.png'])
+    expect(entities.map(e => e.strong)).toEqual(['Joseph Barbosa', 'Waterloo', 'Laurier', 'View my resume ↓'])
+    expect(entities.map(e => e.logo)).toEqual([undefined, 'waterloo.png', 'laurier.png', undefined])
+    expect(entities[3]).toMatchObject({ href: '/resume.pdf', download: true })
     expect(RECRUITER.pitch.join('')).toContain('Winter 2027')
     const now = RECRUITER.groups[0]
     expect(now.label).toBe('currently:')

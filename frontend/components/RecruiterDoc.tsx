@@ -30,6 +30,7 @@ function Strong({ item }: { item: Partial<DocEntity> }) {
       href={item.href}
       target={isExternal(item.href) ? '_blank' : undefined}
       rel={isExternal(item.href) ? 'noopener noreferrer' : undefined}
+      download={item.download ? 'Joseph_Barbosa_Resume.pdf' : undefined}
       style={strongStyle}
       onMouseEnter={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
       onMouseLeave={e => (e.currentTarget.style.borderBottomColor = 'var(--line-2)')}
