@@ -54,6 +54,47 @@ function LobeTracker({
   return null
 }
 
+// Mobile: the page scroll drives the camera instead of OrbitControls. Reading
+// down the doc turns the brain about three-quarters of a revolution, tilts it
+// slightly, and brings it a little closer; a slow idle drift keeps it alive
+// while the reader pauses. Progress is smoothed so flicks feel weighty.
+function ScrollDrive({ active }: { active: boolean }) {
+  const { camera } = useThree()
+  const targetRef = useRef(0)   // raw scroll progress 0..1
+  const curRef    = useRef(0)   // smoothed
+  const idleRef   = useRef(0)   // accumulated idle drift (radians)
+
+  useEffect(() => {
+    if (!active) return
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      targetRef.current = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll) }
+  }, [active])
+
+  useFrame((_, delta) => {
+    if (!active) return
+    curRef.current += (targetRef.current - curRef.current) * Math.min(1, delta * 5)
+    idleRef.current += delta * 0.06
+    const p     = curRef.current
+    const theta = p * Math.PI * 1.5 + idleRef.current
+    const phi   = Math.PI / 2 - 0.12 + p * 0.35        // tilt over as you read
+    const r     = 9 - p * 2.5                            // and come a little closer
+    camera.position.set(
+      r * Math.sin(phi) * Math.sin(theta),
+      r * Math.cos(phi) + 0.3,
+      r * Math.sin(phi) * Math.cos(theta),
+    )
+    camera.lookAt(0, 0, 0)
+  })
+
+  return null
+}
+
 // Renders OrbitControls, slides the projection window so the brain parks at
 // `screenX`, and auto-levels the polar angle back to PI/2 after the user stops
 // dragging. Must live inside Canvas to access useFrame.
@@ -211,7 +252,8 @@ export default function BrainCanvas({
           />
         )}
 
-        <AutoLevelControls enabled={revealDone} screenX={layout.screenX} screenY={layout.screenY} />
+        <AutoLevelControls enabled={revealDone && !isMobile} screenX={layout.screenX} screenY={layout.screenY} />
+        <ScrollDrive active={revealDone && isMobile} />
       </Canvas>
     </div>
   )

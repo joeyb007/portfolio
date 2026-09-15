@@ -1,6 +1,6 @@
 'use client'
 
-import type { CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { RECRUITER, type DocEntity, type DocItem, type DocGroup } from '@/lib/recruiter'
 
 interface Props {
@@ -109,9 +109,9 @@ function Item({ item, glyph, glyphColor, indent }: {
   )
 }
 
-function Group({ group }: { group: DocGroup }) {
+function Group({ group, reveal }: { group: DocGroup; reveal: boolean }) {
   return (
-    <li style={{ margin: '14px 0 0' }}>
+    <li className={reveal ? 'doc-reveal' : undefined} style={{ margin: '14px 0 0' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
         <span style={{ ...mono, color: 'var(--fg-3)', fontSize: 10, lineHeight: 1.6 }}>{group.marker}</span>
         <span style={{ color: 'var(--fg-3)', fontStyle: 'italic', fontSize: 13.5, lineHeight: 1.6 }}>{group.label}</span>
@@ -125,7 +125,34 @@ function Group({ group }: { group: DocGroup }) {
   )
 }
 
+// Mobile scroll cues: a one-time chevron that leaves after the first scroll,
+// and groups that rise into place as they enter the viewport.
+function useMobileScrollCues(isMobile: boolean, root: React.RefObject<HTMLElement | null>) {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    if (!isMobile) return
+    const onScroll = () => { if (window.scrollY > 40) setScrolled(true) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [isMobile])
+
+  useEffect(() => {
+    if (!isMobile || !root.current) return
+    const els = root.current.querySelectorAll('.doc-reveal')
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) }
+    }, { rootMargin: '0px 0px -12% 0px' })
+    els.forEach(el => io.observe(el))
+    return () => io.disconnect()
+  }, [isMobile, root])
+
+  return scrolled
+}
+
 export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) {
+  const rootRef  = useRef<HTMLElement | null>(null)
+  const scrolled = useMobileScrollCues(isMobile, rootRef)
   // Desktop: the doc owns the left half of the viewport and the brain the right
   // half. Content is centred in its half both ways; `margin: auto` on the inner
   // block centres when it fits and degrades to a normal scroll when it doesn't.
@@ -140,6 +167,7 @@ export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) 
 
   return (
     <section
+      ref={rootRef}
       aria-label="Summary"
       style={{
         ...sans, ...outer,
@@ -154,7 +182,7 @@ export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) 
         <Pitch />
 
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {RECRUITER.groups.map(group => <Group key={group.label} group={group} />)}
+          {RECRUITER.groups.map(group => <Group key={group.label} group={group} reveal={isMobile} />)}
         </ul>
 
         <nav aria-label="Links" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 20px', marginTop: 28 }}>
@@ -175,6 +203,24 @@ export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) 
           ))}
         </nav>
       </div>
+
+      {isMobile && (
+        <>
+          {/* Doc fades into the chat bar so the cut-off reads as "more below". */}
+          <div aria-hidden style={{
+            position: 'fixed', left: 0, right: 0, bottom: 60, height: 96, zIndex: 6, pointerEvents: 'none',
+            background: 'linear-gradient(to bottom, transparent, var(--bg))',
+          }} />
+          <div aria-hidden className="doc-chevron" style={{
+            position: 'fixed', left: 0, right: 0, bottom: 74, zIndex: 7, pointerEvents: 'none',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+            opacity: scrolled ? 0 : 1, transition: 'opacity 0.5s ease',
+          }}>
+            <span style={{ ...mono, fontSize: 8, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--fg-4)' }}>scroll to turn</span>
+            <span style={{ color: 'var(--fg-3)', fontSize: 16, lineHeight: 1 }}>⌄</span>
+          </div>
+        </>
+      )}
     </section>
   )
 }

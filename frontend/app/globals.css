@@ -118,3 +118,13 @@ body {
 .chat-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; transition: background 0.3s ease; }
 .chat-scroll:hover::-webkit-scrollbar-thumb { background: var(--line-2); }
 .chat-scroll::-webkit-scrollbar-thumb:hover { background: var(--fg-4); }
+
+/* Mobile doc scroll cues (components/RecruiterDoc.tsx). */
+.doc-reveal    { opacity: 0; transform: translateY(14px); transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.2,.8,.2,1); }
+.doc-reveal.in { opacity: 1; transform: none; }
+.doc-chevron > span:last-child { animation: doc-chevron-bob 1.6s ease-in-out infinite; }
+@keyframes doc-chevron-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(4px) } }
+@media (prefers-reduced-motion: reduce) {
+  .doc-reveal { opacity: 1; transform: none; transition: none; }
+  .doc-chevron > span:last-child { animation: none; }
+}
