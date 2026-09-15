@@ -128,3 +128,12 @@ body {
   .doc-reveal { opacity: 1; transform: none; transition: none; }
   .doc-chevron > span:last-child { animation: none; }
 }
+
+/* Site-wide scrollbars: thin, rounded, quiet. Covers the document (blog, mobile
+   doc) and the desktop doc column. The chat thread keeps its hover-only variant. */
+html, body, section[aria-label="Summary"] { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+::-webkit-scrollbar             { width: 6px; height: 6px; }
+::-webkit-scrollbar-track       { background: transparent; }
+::-webkit-scrollbar-thumb       { background: var(--line-2); border-radius: 999px; transition: background 0.3s ease; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-4); }
+::-webkit-scrollbar-corner      { background: transparent; }
