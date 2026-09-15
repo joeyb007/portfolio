@@ -171,8 +171,20 @@ export default function BrainCanvas({
   const groupRef = useRef<THREE.Group | null>(null)
   const layout   = LAYOUTS[brainSide]
 
+  // On phones the reveal plays full-strength, then the brain settles into a
+  // faint, slowly rotating backdrop behind the doc. Pointer events are off so
+  // the page scrolls normally over it.
+  const backdrop = isMobile && revealDone
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+    <div style={{
+      position:      'fixed',
+      inset:         0,
+      zIndex:        0,
+      opacity:       backdrop ? 0.22 : 1,
+      transition:    'opacity 1.4s ease',
+      pointerEvents: isMobile ? 'none' : 'auto',
+    }}>
       <Canvas
         camera={{ position: [0, 0.3, isMobile ? 9 : 5.5], fov: 35 }}
         gl={{ antialias: true, alpha: true }}
@@ -199,7 +211,7 @@ export default function BrainCanvas({
           />
         )}
 
-        <AutoLevelControls enabled={revealDone && !isMobile} screenX={layout.screenX} screenY={layout.screenY} />
+        <AutoLevelControls enabled={revealDone} screenX={layout.screenX} screenY={layout.screenY} />
       </Canvas>
     </div>
   )

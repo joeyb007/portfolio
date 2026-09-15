@@ -53,12 +53,12 @@ export default function Home() {
     return () => mq.removeEventListener('change', h)
   }, [])
 
-  // Mobile mounts no canvas, so there is no reveal to wait for. Desktop gets a safety timer.
+  // Safety timer: if the GLB never loads, the reveal never completes; unstick the UI.
   useEffect(() => {
     if (mode !== 'revealing') return
-    const t = setTimeout(revealDone, isMobile ? 0 : REVEAL_FALLBACK_MS)
+    const t = setTimeout(revealDone, REVEAL_FALLBACK_MS)
     return () => clearTimeout(t)
-  }, [mode, isMobile, revealDone])
+  }, [mode, revealDone])
 
   useEffect(() => { if (modeState.saved) saveMode(modeState.saved) }, [modeState.saved])
 
@@ -130,19 +130,18 @@ export default function Home() {
 
   return (
     <>
-      {!isMobile && (
-        <Suspense fallback={null}>
-          <BrainCanvas
-            activeSection={brainSection}
-            onRegionClick={goTo}
-            onRevealDone={revealDone}
-            isMobile={isMobile}
-            speaking={speaking}
-            brainSide={brainSide}
-            onLobeScreenPos={(x, y) => setLobeScreenPos([x, y])}
-          />
-        </Suspense>
-      )}
+      {/* Mobile keeps the reveal, then the canvas fades to a faint backdrop behind the doc. */}
+      <Suspense fallback={null}>
+        <BrainCanvas
+          activeSection={brainSection}
+          onRegionClick={goTo}
+          onRevealDone={revealDone}
+          isMobile={isMobile}
+          speaking={speaking}
+          brainSide={isMobile ? 'center' : brainSide}
+          onLobeScreenPos={(x, y) => setLobeScreenPos([x, y])}
+        />
+      </Suspense>
 
       {mode === 'animated' && <ScrollContent onNext={goNext} onPrev={goPrev} />}
 

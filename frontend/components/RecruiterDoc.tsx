@@ -130,7 +130,7 @@ export default function RecruiterDoc({ opacity, interactive, isMobile }: Props) 
   // half. Content is centred in its half both ways; `margin: auto` on the inner
   // block centres when it fits and degrades to a normal scroll when it doesn't.
   const outer: CSSProperties = isMobile
-    ? { position: 'static', width: '100%', padding: '56px 20px 140px' }
+    ? { position: 'relative', zIndex: 5, width: '100%', padding: '56px 20px 140px' }   // above the fixed backdrop canvas
     : { position: 'fixed', left: 0, top: 0, bottom: 0, width: '50vw', overflowY: 'auto',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         padding: '6vh 5vw 110px', zIndex: 5 }
