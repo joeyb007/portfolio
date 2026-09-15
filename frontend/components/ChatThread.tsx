@@ -16,8 +16,12 @@ interface Props {
   loading:     boolean
   isMobile?:   boolean
   onSpeaking?: (speaking: boolean) => void
-  /** 'float' (default) overlays the lower-left; 'panel' is an opaque, self-scrolling segment in the right half (Minimalistic mode). */
-  placement?:  'float' | 'panel'
+  /**
+   * 'float'  (default) overlays the lower-left.
+   * 'panel'  opaque, self-scrolling segment in the right half (desktop Minimalistic).
+   * 'inline' same panel but in the page flow below the doc (mobile), so the page scrolls between content and chat.
+   */
+  placement?:  'float' | 'panel' | 'inline'
 }
 
 // ── Audio waveform player ─────────────────────────────────────────────────────
@@ -178,7 +182,8 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
 
   if (messages.length === 0 && !loading) return null
 
-  const isPanel = placement === 'panel' && !isMobile
+  const isPanel  = placement === 'panel' && !isMobile
+  const isInline = placement === 'inline'
 
   const latestAudioId = [...messages]
     .reverse()
@@ -212,15 +217,27 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
           .chat-panel, .chat-bubble { animation: none !important; }
         }
       `}</style>
-      <div className={`chat-scroll${isPanel ? ' chat-panel' : ''}`} style={{
-        position:      'fixed',
-        bottom:        isMobile ? 76 : 72,
-        zIndex:        39,
+      <div className={`chat-scroll${isPanel || isInline ? ' chat-panel' : ''}`} style={{
+        position:      isInline ? 'relative' : 'fixed',
+        bottom:        isInline ? undefined : isMobile ? 76 : 72,
+        zIndex:        isInline ? 5 : 39,
         overflowY:     'auto',
         display:       'flex',
         flexDirection: 'column',
         gap:           10,
-        ...(isPanel
+        ...(isInline
+          ? {
+              margin:          '8px 16px 0',
+              height:          '55vh',
+              padding:         '14px 14px',
+              background:      'color-mix(in srgb, var(--surface) 96%, transparent)',
+              border:          '1px solid var(--line)',
+              borderRadius:    12,
+              boxSizing:       'border-box' as const,
+              transformOrigin: 'bottom center',
+              animation:       'panelOpen 0.45s cubic-bezier(.2,.8,.2,1) both',
+            }
+          : isPanel
           ? {
               left:            'calc(50vw + 24px)',
               width:           'calc(50vw - 48px)',
@@ -241,7 +258,7 @@ export default function ChatThread({ messages, loading, isMobile, onSpeaking, pl
               padding:   '12px 0',
             }),
       }}>
-        {isPanel && <div aria-hidden style={{ marginTop: 'auto' }} />}
+        {(isPanel || isInline) && <div aria-hidden style={{ marginTop: 'auto' }} />}
         {messages.map((m) => (
           <div
             key={m.id}

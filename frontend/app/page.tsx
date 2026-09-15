@@ -171,8 +171,9 @@ export default function Home() {
               loading={chatLoading}
               isMobile={isMobile}
               onSpeaking={setSpeaking}
-              placement={mode === 'minimalistic' ? 'panel' : 'float'}
+              placement={mode !== 'minimalistic' ? 'float' : isMobile ? 'inline' : 'panel'}
             />
+            {isMobile && <div aria-hidden style={{ height: 120 }} />}   {/* clearance above the fixed chat bar */}
             <ChatBar
               onSend={handleSend}
               loading={chatLoading}
