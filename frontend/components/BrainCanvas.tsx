@@ -141,7 +141,7 @@ function AutoLevelControls({
       autoRotate={enabled}
       autoRotateSpeed={0.8}
       minDistance={1.5}
-      maxDistance={6}
+      maxDistance={10}   // must exceed the mobile camera distance (9) or the first update clamps the camera in and the brain jumps larger
       onEnd={() => { lastInteractionRef.current = Date.now(); strengthRef.current = 0 }}
     />
   )
