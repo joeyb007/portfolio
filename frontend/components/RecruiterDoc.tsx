@@ -22,6 +22,21 @@ const strongStyle: CSSProperties = {
 
 const isExternal = (href: string) => /^https?:/.test(href)
 
+// Inline arrow instead of the ↗ character, which iOS renders as an emoji.
+function Arrow({ size = 11 }: { size?: number }) {
+  return (
+    <svg
+      aria-hidden
+      width={size} height={size} viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+      style={{ display: 'inline-block', verticalAlign: '-1px', marginLeft: 4 }}
+    >
+      <line x1="7" y1="17" x2="17" y2="7" />
+      <polyline points="8 7 17 7 17 16" />
+    </svg>
+  )
+}
+
 function Strong({ item }: { item: Partial<DocEntity> }) {
   if (!item.strong) return null
   if (!item.href) return <span style={strongStyle}>{item.strong}</span>
@@ -35,7 +50,7 @@ function Strong({ item }: { item: Partial<DocEntity> }) {
       onMouseEnter={e => (e.currentTarget.style.borderBottomColor = 'var(--accent)')}
       onMouseLeave={e => (e.currentTarget.style.borderBottomColor = 'var(--line-2)')}
     >
-      {item.strong}
+      {item.strong}{item.arrow && <Arrow size={12} />}
     </a>
   )
 }
@@ -98,7 +113,7 @@ function Item({ item, glyph, glyphColor, indent }: {
                   onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
                   onMouseLeave={e => (e.currentTarget.style.color = 'var(--fg-3)')}
                 >
-                  {l.label}{'\u00A0'}↗
+                  {l.label}<Arrow size={10} />
                 </a>
               </span>
             ))}

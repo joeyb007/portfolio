@@ -8,7 +8,7 @@ import { PROJECTS } from './projects'
 import { getSortedPosts } from './blog'
 
 export interface DocLink   { label: string; href: string }
-export interface DocEntity { strong: string; href?: string; logo?: string; download?: boolean }   // a bold, underlined proper noun, optionally with an emblem; download marks a file link
+export interface DocEntity { strong: string; href?: string; logo?: string; download?: boolean; arrow?: boolean }   // bold underlined noun; emblem, file download, trailing arrow icon are optional
 export interface DocItem   extends Partial<DocEntity> { text: string; note?: string; links?: DocLink[] }   // links: trailing mono links, e.g. github · site
 export interface DocGroup  { label: string; marker: '◆' | '■'; items: DocItem[] }
 export type PitchSegment = string | DocEntity
@@ -76,7 +76,7 @@ export const RECRUITER: RecruiterDoc = {
     { strong: 'Waterloo', logo: 'waterloo.png', href: 'https://uwaterloo.ca' }, ' and ',
     { strong: 'Laurier',  logo: 'laurier.png',  href: 'https://wlu.ca' },
     '. I build at the intersection of applied agentic AI, ML research, and product, and I\'m looking for Winter 2027 internships. ',
-    { strong: 'Resume ↗', href: '/resume.pdf', download: true },
+    { strong: 'Resume', href: '/resume.pdf', download: true, arrow: true },
   ],
   groups: [currently, previously, projects, writing],
   links: [
